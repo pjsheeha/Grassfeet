@@ -4,9 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "generate_graph.generated.h"
 #include "array.h"
 #include "Components/StaticMeshComponent.h"
+#include "generate_graph.generated.h"
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -15,9 +15,20 @@ class MYPROJECT4_API Ugenerate_graph : public UActorComponent
 	GENERATED_BODY()
 
 public:	
+	enum class PointFillStatus {
+		Empty,
+		Path,
+		Grass
+	};
+	struct Point {
+		PointFillStatus fill_status;
+		bool has_cow;
+		TArray<uint32_t> next;
+		Point() : fill_status(PointFillStatus::Empty), has_cow() {}
+	};
+
 	// Sets default values for this component's properties
 	Ugenerate_graph();
-	struct Point;
 	UFUNCTION(BlueprintPure,
 		meta = (DisplayName = "Makes a Graph",
 			CompactNodeTitle = "make_graph",

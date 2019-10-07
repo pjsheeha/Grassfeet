@@ -4,28 +4,20 @@
 #include "generate_graph.h"
 #include "Containers/array.h"
 #include "Components/StaticMeshComponent.h"
+#include "PhysicsEngine/BodySetup.h"
 
 
-enum class PointFillStatus {
-	Empty,
-	Path,
-	Grass
-};
+
 
 // 1. Because we use graph to represent data, we have to ensure the player
 //    never go from one point to a non-neighboring point. And grass can only be
 //    filled by neighboring points.
-struct Point {
-	PointFillStatus fill_status;
-	bool has_cow;
-	TArray<uint32_t> next;
-	Point() : fill_status(PointFillStatus::Empty), has_cow() {}
-};
 
 
-TArray<Point> Ugenerate_graph::make_graph(UStaticMeshComponent mesh)
+TArray<Ugenerate_graph::Point,FDefaultAllocator> Ugenerate_graph::make_graph(UStaticMeshComponent mesh)
 {
-	return NULL;
+	auto body_setup = mesh.BodyInstance.BodySetup.Get();
+	auto tris = body_setup->TriMeshes[0];
 }
 
 // Sets default values for this component's properties
