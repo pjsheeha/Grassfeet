@@ -9,17 +9,19 @@
 #include "generate_graph.generated.h"
 
 UENUM(BlueprintType)
-enum class PointFillStatus {
+enum class PointFillStatus : uint8 {
 	Empty,
 	Path,
 	Grass
 };
-USTRUCT()
-struct Point {
+USTRUCT(Blueprintable)
+struct FPoint {
+
+	GENERATED_BODY()
 	PointFillStatus fill_status;
 	bool has_cow;
-	TArray<uint32_t> next;
-	Point() : fill_status(PointFillStatus::Empty), has_cow() {}
+	TArray<PxU32> next;
+	FPoint() : fill_status(PointFillStatus::Empty), has_cow() {}
 };
 
 
@@ -37,7 +39,7 @@ public:
 			CompactNodeTitle = "make_graph",
 			Keywords = "graph make grassfeet"),
 		Category = Game)
-		static TArray<Point> make_graph(UStaticMeshComponent mesh);
+		static TArray<FPoint> make_graph(UStaticMeshComponent *mesh);
 
 
 protected:

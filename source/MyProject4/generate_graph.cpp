@@ -18,17 +18,14 @@
 //    filled by neighboring points.
 
 template<typename index_type>
-bool node_relation(index_type triangle_array,int triangle_A, int triangle_B,int required_shared_edges)
+bool node_relation(index_type triangle_array,int triangle_A, PxU32 triangle_B,PxU32 required_shared_edges)
 {
-	auto VertA1 = ;
-	auto VertA2 = triangle_array[triangle_A * 3 + 1];
-	auto VertA3 = triangle_array[triangle_A * 3 + 2];
 
 	int shared_edges = 0;
 
 	for (int a = 0; a < 3; a++)
 	{
-		int(b = 0; b < 3; b++)
+		for(int b = 0; b < 3; b++)
 		{
 			if (triangle_array[triangle_A * 3 + a]
 			 == triangle_array[triangle_B * 3 + b])
@@ -43,14 +40,14 @@ bool node_relation(index_type triangle_array,int triangle_A, int triangle_B,int 
 }
 
 
-void fill_edges(TArray<Point> graph,physx::PxTriangleMesh *triangles)
+void fill_edges(TArray<FPoint> graph,physx::PxTriangleMesh *triangles)
 {
 	auto triangle_array = triangles->getTriangles();
-	for (int tri = 0; tri < triangles->getNbTriangles(); tri++)
+	for (PxU32 tri = 0; tri < triangles->getNbTriangles(); tri++)
 	{
 		for (int vertex = 0; vertex < 3; vertex++)
 		{
-			for (int potential_neighbor = 0;
+			for (PxU32 potential_neighbor = 0;
 				potential_neighbor < triangles->getNbTriangles(); potential_neighbor++)
 			{
 				if (tri != potential_neighbor)
@@ -75,12 +72,12 @@ void fill_edges(TArray<Point> graph,physx::PxTriangleMesh *triangles)
 	}
 }
 
-TArray<Point,FDefaultAllocator> Ugenerate_graph::make_graph(UStaticMeshComponent mesh)
+TArray<FPoint,FDefaultAllocator> Ugenerate_graph::make_graph(UStaticMeshComponent *mesh)
 {
-	physx::PxTriangleMesh *triangles = mesh.BodyInstance.BodySetup.Get()->TriMeshes[0];
+	physx::PxTriangleMesh *triangles = mesh->BodyInstance.BodySetup.Get()->TriMeshes[0];
 
-	TArray<Point> graph = TArray<Point>();
-	graph.Init(Point(),triangles->getNbTriangles());
+	TArray<FPoint> graph = TArray<FPoint>();
+	graph.Init(FPoint(),triangles->getNbTriangles());
 
 	fill_edges(graph,triangles);
 
