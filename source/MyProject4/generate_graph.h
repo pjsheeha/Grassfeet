@@ -8,6 +8,20 @@
 #include "Components/StaticMeshComponent.h"
 #include "generate_graph.generated.h"
 
+UENUM(BlueprintType)
+enum class PointFillStatus {
+	Empty,
+	Path,
+	Grass
+};
+USTRUCT()
+struct Point {
+	PointFillStatus fill_status;
+	bool has_cow;
+	TArray<uint32_t> next;
+	Point() : fill_status(PointFillStatus::Empty), has_cow() {}
+};
+
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MYPROJECT4_API Ugenerate_graph : public UActorComponent
@@ -15,18 +29,7 @@ class MYPROJECT4_API Ugenerate_graph : public UActorComponent
 	GENERATED_BODY()
 
 public:	
-	enum class PointFillStatus {
-		Empty,
-		Path,
-		Grass
-	};
-	struct Point {
-		PointFillStatus fill_status;
-		bool has_cow;
-		TArray<uint32_t> next;
-		Point() : fill_status(PointFillStatus::Empty), has_cow() {}
-	};
-
+	
 	// Sets default values for this component's properties
 	Ugenerate_graph();
 	UFUNCTION(BlueprintPure,
