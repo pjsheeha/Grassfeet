@@ -74,7 +74,11 @@ void fill_edges(TArray<FPoint> graph,physx::PxTriangleMesh *triangles)
 
 TArray<FPoint,FDefaultAllocator> Ugenerate_graph::make_graph(UStaticMeshComponent *mesh)
 {
-	physx::PxTriangleMesh *triangles = mesh->BodyInstance.BodySetup.Get()->TriMeshes[0];
+	printf("%f\n", mesh->CalculateMass());
+	return TArray<FPoint>();
+	auto body = mesh->BodyInstance;
+	auto setup = body.BodySetup.Get();
+	physx::PxTriangleMesh *triangles = setup->TriMeshes[0];
 
 	TArray<FPoint> graph = TArray<FPoint>();
 	graph.Init(FPoint(),triangles->getNbTriangles());
