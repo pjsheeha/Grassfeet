@@ -21,7 +21,7 @@ template<typename index_type>
 bool node_relation(index_type triangle_array,int triangle_A, PxU32 triangle_B,PxU32 required_shared_edges)
 {
 
-	int shared_edges = 0;
+	unsigned int shared_edges = 0;
 
 	for (int a = 0; a < 3; a++)
 	{
@@ -54,7 +54,7 @@ void fill_edges(TArray<FPoint> graph,physx::PxTriangleMesh *triangles)
 				{
 					if (triangles->getTriangleMeshFlags() & PxTriangleMeshFlag::e16_BIT_INDICES)
 					{
-						if (node_relation<PxU16*>((PxU16*)triangle_array, tri, potential_neighbor,2))
+						if (node_relation((PxU16*)triangle_array, tri, potential_neighbor,2))
 						{
 							graph[tri].next.AddUnique(potential_neighbor);
 						}

@@ -6,6 +6,10 @@
 #include "Components/ActorComponent.h"
 #include "array.h"
 #include "Components/StaticMeshComponent.h"
+#include "PhysicsPublic.h"
+#include "PhysXIncludes.h"
+#include "geometry/PxTriangleMesh.h"
+#include "foundation/PxSimpleTypes.h"
 #include "generate_graph.generated.h"
 
 UENUM(BlueprintType)
@@ -14,7 +18,7 @@ enum class PointFillStatus : uint8 {
 	Path,
 	Grass
 };
-USTRUCT(Blueprintable)
+USTRUCT(BlueprintType)
 struct FPoint {
 
 	GENERATED_BODY()
