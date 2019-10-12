@@ -40,7 +40,7 @@ bool node_relation(index_type triangle_array,int triangle_A, PxU32 triangle_B,Px
 }
 
 
-void fill_edges(TArray<FPoint> graph,physx::PxTriangleMesh *triangles)
+void fill_edges(TArray<FPoint> &graph,physx::PxTriangleMesh *triangles)
 {
 	auto triangle_array = triangles->getTriangles();
 	for (PxU32 tri = 0; tri < triangles->getNbTriangles(); tri++)
@@ -80,7 +80,16 @@ TArray<FPoint,FDefaultAllocator> Ugenerate_graph::make_graph(UStaticMeshComponen
 	TArray<FPoint> graph = TArray<FPoint>();
 	graph.Init(FPoint(),triangles->getNbTriangles());
 
-	fill_edges(graph,triangles);
+	fill_edges(graph, triangles);
+
+	UE_LOG(LogTemp, Warning, TEXT("GraphSize: %d"), graph.Num());
+	for (auto& x : graph) {
+		UE_LOG(LogTemp, Warning, TEXT("NextSize: %d"), x.next.Num());
+		for (auto& y : x.next) {
+			UE_LOG(LogTemp, Warning, TEXT("Next: %d"), y);
+		}
+		UE_LOG(LogTemp, Warning, TEXT("Next: ==================="));
+	}
 
 	return graph;
 }
