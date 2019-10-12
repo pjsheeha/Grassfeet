@@ -45,30 +45,28 @@ void fill_edges(TArray<FPoint> &graph,physx::PxTriangleMesh *triangles)
 	auto triangle_array = triangles->getTriangles();
 	for (PxU32 tri = 0; tri < triangles->getNbTriangles(); tri++)
 	{
-		for (int vertex = 0; vertex < 3; vertex++)
+		for (PxU32 potential_neighbor = 0;
+			potential_neighbor < triangles->getNbTriangles(); potential_neighbor++)
 		{
-			for (PxU32 potential_neighbor = 0;
-				potential_neighbor < triangles->getNbTriangles(); potential_neighbor++)
+			if (tri != potential_neighbor)
 			{
-				if (tri != potential_neighbor)
+				if (triangles->getTriangleMeshFlags() & PxTriangleMeshFlag::e16_BIT_INDICES)
 				{
-					if (triangles->getTriangleMeshFlags() & PxTriangleMeshFlag::e16_BIT_INDICES)
+					if (node_relation((PxU16*)triangle_array, tri, potential_neighbor,2))
 					{
-						if (node_relation((PxU16*)triangle_array, tri, potential_neighbor,2))
-						{
-							graph[tri].next.AddUnique(potential_neighbor);
-						}
+						graph[tri].next.AddUnique(potential_neighbor);
 					}
-					else
+				}
+				else
+				{
+					if (node_relation((PxU32*)triangle_array, tri, potential_neighbor,2))
 					{
-						if (node_relation((PxU32*)triangle_array, tri, potential_neighbor,2))
-						{
-							graph[tri].next.AddUnique(potential_neighbor);
-						}
+						graph[tri].next.AddUnique(potential_neighbor);
 					}
 				}
 			}
 		}
+		
 	}
 }
 
@@ -77,6 +75,7 @@ TArray<FPoint,FDefaultAllocator> Ugenerate_graph::make_graph(UStaticMeshComponen
 	auto body = mesh->BodyInstance;
 	auto setup = body.BodySetup.Get();
 	physx::PxTriangleMesh *triangles = setup->TriMeshes[0];
+
 
 	TArray<FPoint> graph = TArray<FPoint>();
 	graph.Init(FPoint(),triangles->getNbTriangles());
