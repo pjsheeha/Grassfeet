@@ -70,6 +70,11 @@ void fill_edges(TArray<FPoint> &graph,physx::PxTriangleMesh *triangles)
 	}
 }
 
+bool Ugenerate_graph::IsGrass(TArray<FPoint> graph, int index)
+{
+	return graph[index].isGrass();
+}
+
 TArray<FPoint,FDefaultAllocator> Ugenerate_graph::make_graph(UStaticMeshComponent *mesh)
 {
 	auto body = mesh->BodyInstance;

@@ -22,10 +22,16 @@ USTRUCT(BlueprintType)
 struct FPoint {
 
 	GENERATED_BODY()
-	PointFillStatus fill_status;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Flower Struct")
+    PointFillStatus fill_status;
 	bool has_cow;
 	TArray<PxU32> next;
 	FPoint() : fill_status(PointFillStatus::Empty), has_cow() {}
+
+	bool isGrass()
+	{
+		return fill_status == PointFillStatus::Grass || fill_status == PointFillStatus::Path;
+	}
 };
 
 
@@ -44,6 +50,13 @@ public:
 			Keywords = "graph make grassfeet"),
 		Category = Game)
 		static TArray<FPoint> make_graph(UStaticMeshComponent *mesh);
+	UFUNCTION(BlueprintPure,
+		meta = (DisplayName = "Is it grass?",
+			CompactNodeTitle = "is_graph",
+			Keywords = "grass is grassfeet"),
+		Category = Game)
+		static bool IsGrass(TArray<FPoint> graph, int index);
+
 
 
 protected:
