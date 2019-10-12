@@ -19,5 +19,5 @@ public:
 			CompactNodeTitle = "stepOn",
 			Keywords = "graph grass step"),
 		Category = Game)
-	static void stepOn(UPARAM(ref) TArray<FPoint>& points, int32 index, int32 max_fill);
+	static void StepOn(UPARAM(ref) TArray<FPoint>& Points, int32 Index, int32 MaxFill);
 };
