@@ -1,5 +1,6 @@
 #pragma once
 
+#include "generate_graph.h"
 #include "Util.h"
 
 #include "CoreMinimal.h"
@@ -26,6 +27,13 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION(BlueprintCallable,
+		meta = (DisplayName = "Update Grass",
+			CompactNodeTitle = "UpdateGrass",
+			Keywords = "graph grass update"),
+		Category = Game)
+		void UpdateGrass(UPARAM(ref) TArray<FPoint>& points);
 
 private:
 	
