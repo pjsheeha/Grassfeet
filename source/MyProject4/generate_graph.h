@@ -22,8 +22,9 @@ USTRUCT(BlueprintType)
 struct FPoint {
 
 	GENERATED_BODY()
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Flower Struct")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "grass Struct")
     PointFillStatus fill_status;
+	UPROPERTY(EDITAnywhere, BlueprintReadWrite, Category = "grass Struct")
 	bool has_cow;
 	TArray<PxU32> next;
 	FPoint() : fill_status(PointFillStatus::Empty), has_cow() {}
