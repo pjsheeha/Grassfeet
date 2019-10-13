@@ -52,11 +52,17 @@ public:
 		static TArray<FPoint> make_graph(UStaticMeshComponent *mesh);
 	UFUNCTION(BlueprintPure,
 		meta = (DisplayName = "Is it grass?",
-			CompactNodeTitle = "is_graph",
+			CompactNodeTitle = "is_grass",
 			Keywords = "grass is grassfeet"),
 		Category = Game)
-		static bool IsGrass(TArray<FPoint> graph, int index);
+		static PointFillStatus IsGrass(TArray<FPoint> graph, int index);
 
+	UFUNCTION(BlueprintCallable,
+		meta = (DisplayName = "add all relations?",
+			CompactNodeTitle = "addAllAdjacency",
+			Keywords = "grass add grassfeet"),
+		Category = Game)
+		static void AddAllAdjacency(UPARAM(ref) TArray<FPoint>& graph, TArray<FVector> vertices, TArray<int> triangles);
 
 
 protected:

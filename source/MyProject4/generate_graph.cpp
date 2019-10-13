@@ -9,6 +9,8 @@
 #include "PhysXIncludes.h"
 #include "geometry/PxTriangleMesh.h"
 #include "foundation/PxSimpleTypes.h"
+#include "Engine/StaticMesh.h"
+#include "StaticMeshResources.h"
 
 
 
@@ -17,11 +19,10 @@
 //    never go from one point to a non-neighboring point. And grass can only be
 //    filled by neighboring points.
 
-template<typename index_type>
-bool node_relation(index_type triangle_array,int triangle_A, PxU32 triangle_B,PxU32 required_shared_edges)
+bool node_relation(TArray<int> triangle_array,int triangle_A, int triangle_B,int required_shared_edges)
 {
 
-	unsigned int shared_edges = 0;
+	int32 shared_edges = 0;
 
 	for (int a = 0; a < 3; a++)
 	{
@@ -36,17 +37,16 @@ bool node_relation(index_type triangle_array,int triangle_A, PxU32 triangle_B,Px
 	}
 
 	return shared_edges >= required_shared_edges;
-	
 }
 
 
 void fill_edges(TArray<FPoint> &graph,physx::PxTriangleMesh *triangles)
 {
-	auto triangle_array = triangles->getTriangles();
-	for (PxU32 tri = 0; tri < triangles->getNbTriangles(); tri++)
+	/*auto triangle_array = triangles->getTriangles();
+	for (int32 tri = 0; tri < (int32)triangles->getNbTriangles(); tri++)
 	{
-		for (PxU32 potential_neighbor = 0;
-			potential_neighbor < triangles->getNbTriangles(); potential_neighbor++)
+		for (int32 potential_neighbor = 0;
+			potential_neighbor < (int32)triangles->getNbTriangles(); potential_neighbor++)
 		{
 			if (tri != potential_neighbor)
 			{
@@ -66,14 +66,38 @@ void fill_edges(TArray<FPoint> &graph,physx::PxTriangleMesh *triangles)
 				}
 			}
 		}
-		
-	}
+	}*/
 }
 
-bool Ugenerate_graph::IsGrass(TArray<FPoint> graph, int index)
+PointFillStatus Ugenerate_graph::IsGrass(TArray<FPoint> graph, int index)
 {
-	return graph[index].isGrass();
+	return graph[index].fill_status;
 }
+
+void Ugenerate_graph::AddAllAdjacency(UPARAM(ref) TArray<FPoint>& graph, TArray<FVector> vertices, TArray<int> triangles)
+{
+	for (int32 tri = 0; tri < triangles.Num(); tri++)
+	{
+		for (int32 potential_neighbor = 0;
+			potential_neighbor < triangles.Num(); potential_neighbor++)
+		{
+			if (tri != potential_neighbor)
+			{
+				if (node_relation(triangles, tri, potential_neighbor, 2))
+				{
+					graph[tri].next.AddUnique(potential_neighbor);
+				}
+				
+			}
+		}
+	}
+}
+/*
+void Ugenerate_graph::AddAdjacency(UPARAM(ref) TArray<FPoint>& graph, int a, int b)
+{
+	graph[a].next.AddUnique(b);
+	graph[b].next.AddUnique(a);
+}*/
 
 TArray<FPoint,FDefaultAllocator> Ugenerate_graph::make_graph(UStaticMeshComponent *mesh)
 {
@@ -84,17 +108,22 @@ TArray<FPoint,FDefaultAllocator> Ugenerate_graph::make_graph(UStaticMeshComponen
 
 	TArray<FPoint> graph = TArray<FPoint>();
 	graph.Init(FPoint(),triangles->getNbTriangles());
+	/*
+	auto staticmesh = mesh->GetStaticMesh();
+	auto renderData = staticmesh->RenderData->LODResources;
+	auto section = renderData[0].Sections[0];*/
+
 
 	fill_edges(graph, triangles);
 
-	UE_LOG(LogTemp, Warning, TEXT("GraphSize: %d"), graph.Num());
+	/*UE_LOG(LogTemp, Warning, TEXT("GraphSize: %d"), graph.Num());
 	for (auto& x : graph) {
 		UE_LOG(LogTemp, Warning, TEXT("NextSize: %d"), x.next.Num());
 		for (auto& y : x.next) {
 			UE_LOG(LogTemp, Warning, TEXT("Next: %d"), y);
 		}
 		UE_LOG(LogTemp, Warning, TEXT("Next: ==================="));
-	}
+	}*/
 
 	return graph;
 }
