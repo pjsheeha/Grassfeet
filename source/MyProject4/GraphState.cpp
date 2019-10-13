@@ -189,5 +189,5 @@ void UGraphState::stepOn(UPARAM(ref) TArray<FPoint>& points, int32 index, int32 
 		return;
 	}
 	stepOnFull(points, index, max_fill);
-	//debugStatus(points);
+	debugStatus(points);
 }

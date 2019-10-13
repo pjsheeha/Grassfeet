@@ -19,17 +19,19 @@
 //    never go from one point to a non-neighboring point. And grass can only be
 //    filled by neighboring points.
 
-bool node_relation(TArray<int> triangle_array,int triangle_A, int triangle_B,int required_shared_edges)
+bool node_relation(TArray<FVector> vertices,TArray<int> triangles ,int triangle_A, int triangle_B,int required_shared_edges)
 {
 
 	int32 shared_edges = 0;
+
+
 
 	for (int a = 0; a < 3; a++)
 	{
 		for(int b = 0; b < 3; b++)
 		{
-			if (triangle_array[triangle_A * 3 + a]
-			 == triangle_array[triangle_B * 3 + b])
+			if ( (vertices[triangles[triangle_A * 3 + a]]
+			 - vertices[triangles[triangle_B * 3 + b]]).Size() < .01f)
 			{
 				shared_edges++;
 			}
@@ -76,14 +78,14 @@ PointFillStatus Ugenerate_graph::IsGrass(TArray<FPoint> graph, int index)
 
 void Ugenerate_graph::AddAllAdjacency(UPARAM(ref) TArray<FPoint>& graph, TArray<FVector> vertices, TArray<int> triangles)
 {
-	for (int32 tri = 0; tri < triangles.Num(); tri++)
+	for (int32 tri = 0; tri < triangles.Num() / 3; tri++)
 	{
 		for (int32 potential_neighbor = 0;
-			potential_neighbor < triangles.Num(); potential_neighbor++)
+			potential_neighbor < triangles.Num() / 3; potential_neighbor++)
 		{
 			if (tri != potential_neighbor)
 			{
-				if (node_relation(triangles, tri, potential_neighbor, 2))
+				if (node_relation(vertices, triangles, tri, potential_neighbor, 2))
 				{
 					graph[tri].next.AddUnique(potential_neighbor);
 				}
