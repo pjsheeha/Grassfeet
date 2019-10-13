@@ -1,5 +1,6 @@
-#include "generate_graph.h"
 #include "GrassActor.h"
+
+#include "generate_graph.h"
 #include "Util.h"
 
 #include "EngineUtils.h"
@@ -27,19 +28,22 @@ void AGrassActor::Tick(float DeltaTime)
 	
 	auto world = GetWorld();
 	if (!world) return;
+
 	auto controller = world->GetFirstPlayerController<AController>();
 	if (!controller) return;
 	auto pawn = controller->GetPawn();
 	if (!pawn) return;
 
-	UArrayProperty* prop = FindField<UArrayProperty>(pawn->GetClass(), L"graph");
+	UClass* graph = FindObject<UClass>(ANY_PACKAGE, L"/Game/TwinStickBP/Blueprints/PlanetGraph.PlanetGraph_C");
+	UArrayProperty* prop = FindField<UArrayProperty>(graph->GetClass(), L"non_hotloaded_graph");
 	if (!prop) return;
-	FScriptArray *script_array = prop->GetPropertyValuePtr_InContainer(pawn);
+	FScriptArray *script_array = prop->GetPropertyValuePtr_InContainer(graph);
 	if (!script_array) return;
 
 	// This is ugly, but by design this is how you do it in Unreal.
 	auto &array = *reinterpret_cast<TArray<FPoint>*>(script_array);
+	GF_LOG(L"LEN:      %d", array.Num());
 
 	UClass* grass = FindObject<UClass>(ANY_PACKAGE, L"/Game/TwinStickBP/Blueprints/Grass.Grass_C");
-	GetWorld()->SpawnActor<UObject>(grass, pawn->GetTransform());
+	world->SpawnActor<UObject>(grass, pawn->GetTransform());
 }
