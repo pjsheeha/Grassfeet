@@ -1,15 +1,10 @@
 #pragma once
 
 #include "generate_graph.h"
-#include "Util.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-
-#include <vector>
-
 #include "GrassActor.generated.h"
-
 
 UCLASS()
 class MYPROJECT4_API AGrassActor : public AActor
@@ -28,13 +23,17 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintCallable,
-		meta = (DisplayName = "Update Grass",
-			CompactNodeTitle = "UpdateGrass",
-			Keywords = "graph grass update"),
-		Category = Game)
-		void UpdateGrass(UPARAM(ref) TArray<FPoint>& points);
+	PointFillStatus GetFillStatus();
+	void SetFillStatus(PointFillStatus Status);
 
 private:
-	
+	UStaticMeshComponent *GrassComponent, *PregrassComponent;
+	PointFillStatus FillStatus{ PointFillStatus::Empty };
+
+	UFUNCTION(BlueprintCallable,
+		meta = (DisplayName = "Set Grass Meshes",
+			CompactNodeTitle = "SetGrassMeshes",
+			Keywords = "grass mesh meshes"),
+		Category = Game)
+		void SetGrassMeshes(UStaticMeshComponent *Grass, UStaticMeshComponent *Pregrass);
 };

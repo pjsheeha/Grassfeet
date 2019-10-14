@@ -1,13 +1,5 @@
 #include "GrassActor.h"
 
-#include "generate_graph.h"
-#include "Util.h"
-
-#include "EngineUtils.h"
-#include "GameFramework/Controller.h"
-
-#include <memory>
-
 // Sets default values
 AGrassActor::AGrassActor()
 {
@@ -27,17 +19,30 @@ void AGrassActor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AGrassActor::UpdateGrass(UPARAM(ref) TArray<FPoint>& points)
+PointFillStatus AGrassActor::GetFillStatus()
 {
-	auto world = GetWorld();
-	if (!world) return;
+	return this->FillStatus;
+}
 
-	auto controller = world->GetFirstPlayerController<AController>();
-	if (!controller) return;
-	auto pawn = controller->GetPawn();
-	if (!pawn) return;
+void AGrassActor::SetFillStatus(PointFillStatus Status)
+{
+	switch (Status) {
+	case PointFillStatus::Empty:
+		GrassComponent->SetHiddenInGame(true);
+		PregrassComponent->SetHiddenInGame(true);
+		break;
+	case PointFillStatus::Grass:
+		GrassComponent->SetHiddenInGame(false);
+		PregrassComponent->SetHiddenInGame(true);
+		break;
+	case PointFillStatus::Path:
+		GrassComponent->SetHiddenInGame(true);
+		PregrassComponent->SetHiddenInGame(false);
+	}
+	this->FillStatus = Status;
+}
 
-	UClass *grass_class = FindObject<UClass>(ANY_PACKAGE, L"/Game/TwinStickBP/Blueprints/Grass.Grass_C");
-	//AActor *grass = world->SpawnActor<AActor>(grass_class, pawn->GetTransform());
-	//grass->Destroy();
+void AGrassActor::SetGrassMeshes(UStaticMeshComponent *Grass, UStaticMeshComponent *Pregrass) {
+	this->GrassComponent = Grass;
+	this->PregrassComponent = Pregrass;
 }

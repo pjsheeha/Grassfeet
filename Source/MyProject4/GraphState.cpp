@@ -105,7 +105,7 @@ static void stepOnFull(
 	std::function<void(uint32_t, PointFillStatus)> fill
 	= [](uint32_t, PointFillStatus) {}
 ) {
-	GF_LOG(L"stepOnFull, index=%d", index);
+	//GF_LOG(L"stepOnFull, index=%d", index);
 
 	Point& point = points[index];
 
@@ -188,5 +188,5 @@ void UGraphState::stepOn(UPARAM(ref) TArray<FPoint>& points, int32 index, int32 
 		return;
 	}
 	stepOnFull(points, index, max_fill);
-	debugStatus(points);
+	//debugStatus(points);
 }

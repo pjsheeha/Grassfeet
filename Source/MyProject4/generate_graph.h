@@ -24,8 +24,11 @@ struct FPoint {
 	GENERATED_BODY()
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Flower Struct")
     PointFillStatus fill_status;
+
 	bool has_cow;
 	TArray<PxU32> next;
+	FTransform transform{};
+
 	FPoint() : fill_status(PointFillStatus::Empty), has_cow() {}
 
 	bool isGrass()
@@ -62,7 +65,7 @@ public:
 			CompactNodeTitle = "addAllAdjacency",
 			Keywords = "grass add grassfeet"),
 		Category = Game)
-		static void AddAllAdjacency(UPARAM(ref) TArray<FPoint>& graph, TArray<FVector> vertices, TArray<int> triangles);
+		static void AddAllAdjacency(UPARAM(ref) TArray<FPoint>& graph, TArray<FVector> vertices, TArray<FVector> normals, TArray<int> triangles);
 
 
 protected:

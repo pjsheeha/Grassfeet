@@ -10,6 +10,7 @@
 #include "geometry/PxTriangleMesh.h"
 #include "foundation/PxSimpleTypes.h"
 #include "Engine/StaticMesh.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "StaticMeshResources.h"
 
 
@@ -76,10 +77,15 @@ PointFillStatus Ugenerate_graph::IsGrass(TArray<FPoint> graph, int index)
 	return graph[index].fill_status;
 }
 
-void Ugenerate_graph::AddAllAdjacency(UPARAM(ref) TArray<FPoint>& graph, TArray<FVector> vertices, TArray<int> triangles)
+void Ugenerate_graph::AddAllAdjacency(UPARAM(ref) TArray<FPoint>& graph, TArray<FVector> vertices, TArray<FVector> normals, TArray<int> triangles)
 {
 	for (int32 tri = 0; tri < triangles.Num() / 3; tri++)
 	{
+		FTransform transform;
+		transform.SetLocation((vertices[triangles[tri * 3 + 0]] + vertices[triangles[tri * 3 + 1]] + vertices[triangles[tri * 3 + 2]]) / 3);
+		transform.SetRotation(FQuat(UKismetMathLibrary::MakeRotFromZ((normals[triangles[tri * 3 + 0]] + vertices[triangles[tri * 3 + 1]] + vertices[triangles[tri * 3 + 2]]) / 3)));
+		graph[tri].transform = transform;
+
 		for (int32 potential_neighbor = 0;
 			potential_neighbor < triangles.Num() / 3; potential_neighbor++)
 		{
