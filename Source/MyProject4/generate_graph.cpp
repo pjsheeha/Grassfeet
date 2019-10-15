@@ -1,4 +1,7 @@
 #include "generate_graph.h"
+
+#include "Util.h"
+
 #include "Containers/array.h"
 #include "Components/StaticMeshComponent.h"
 #include "PhysicsEngine/BodySetup.h"
@@ -8,12 +11,98 @@
 #include "foundation/PxSimpleTypes.h"
 #include "Engine/StaticMesh.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Misc/Paths.h"
 #include "StaticMeshResources.h"
+
+#include <cstdio>
+#include <string>
 
 
 // 1. Because we use graph to represent data, we have to ensure the player
 //    never go from one point to a non-neighboring point. And grass can only be
 //    filled by neighboring points.
+
+
+bool read(FILE* f, TArray<FPoint> &array) {
+	array.Empty();
+
+	uint8_t buffer[16];
+
+	if (fread(buffer, 10, 1, f) != 1) return false;
+	if (buffer[0] != 'G' || buffer[1] != 'R' || buffer[2] != 'A' || buffer[3] != 'S'
+		|| buffer[4] != 'S' || buffer[5] != 'F' || buffer[6] != 'E' || buffer[7] != 'E'
+		|| buffer[8] != 'T') {
+		return false;
+	}
+	// Version
+	if (buffer[9] != 1) return false;
+
+	if (fread(buffer, 4, 1, f) != 1) return false;
+	uint32_t vertices = (buffer[0] << 24) + (buffer[1] << 16) + (buffer[2] << 8) + (buffer[3]);
+
+	for (uint32_t i = 0; i < vertices; i++) {
+		float position[3];
+		for (int j = 0; j < 3; j++) {
+			if (fread(buffer, 4, 1, f) != 1) return false;
+			uint32_t position32 = (buffer[0] << 24) + (buffer[1] << 16) + (buffer[2] << 8) + (buffer[3]);
+			position[j] = *reinterpret_cast<float*>(&position32);
+		}
+
+		float normal[3];
+		for (int j = 0; j < 3; j++) {
+			if (fread(buffer, 4, 1, f) != 1) return false;
+			uint32_t normal32 = (buffer[0] << 24) + (buffer[1] << 16) + (buffer[2] << 8) + (buffer[3]);
+			normal[j] = *reinterpret_cast<float*>(&normal32);
+		}
+
+		if (fread(buffer, 4, 1, f) != 1) return false;
+		uint32_t edges = (buffer[0] << 24) + (buffer[1] << 16) + (buffer[2] << 8) + (buffer[3]);
+		
+		TArray<PxU32> next;
+		next.Reserve(edges);
+
+		for (uint32_t j = 0; j < edges; j++) {
+			if (fread(buffer, 4, 1, f) != 1) return false;
+			uint32_t v = (buffer[0] << 24) + (buffer[1] << 16) + (buffer[2] << 8) + (buffer[3]);
+			next.Push(v);
+		}
+
+		FVector position_v(position[0], position[1], position[2]);
+		FVector normal_v(normal[0], normal[1], normal[2]);
+
+		FPoint point;
+		point.next = std::move(next);
+		point.transform.SetLocation(position_v);
+		point.transform.SetRotation(FQuat(UKismetMathLibrary::MakeRotFromZ(normal_v)));
+		array.Push(point);
+	}
+
+	return true;
+}
+
+TArray<FPoint> Ugenerate_graph::ReadMap() {
+	FString dir = FPaths::ProjectDir();	
+	std::string file = std::string(TCHAR_TO_UTF8(*dir)) + "/map-sphere.gra";
+	FILE* f = fopen(file.c_str(), "rb");
+
+	if (!f) {
+		GF_LOG(L"Cannot read map-sphere.gra");
+		return TArray<FPoint>();
+	}
+
+	TArray<FPoint> array;
+	bool res = read(f, array);
+	
+	fclose(f);
+
+	if (res)
+		return array;
+	else
+		return TArray<FPoint>();
+}
+
+// Below are deprecated.
+///////////////////////////////////////////////////////////////
 
 bool node_relation(TArray<FVector> vertices,TArray<int> triangles ,int triangle_A, int triangle_B,int required_shared_edges)
 {

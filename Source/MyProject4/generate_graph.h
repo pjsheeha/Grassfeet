@@ -47,6 +47,15 @@ public:
 	
 	// Sets default values for this component's properties
 	Ugenerate_graph();
+
+
+	UFUNCTION(BlueprintPure,
+		meta = (DisplayName = "Read Map",
+			CompactNodeTitle = "ReadMap",
+			Keywords = "graph map read"),
+		Category = Game)
+		static TArray<FPoint> ReadMap();
+
 	UFUNCTION(BlueprintPure,
 		meta = (DisplayName = "Makes a Graph",
 			CompactNodeTitle = "make_graph",
