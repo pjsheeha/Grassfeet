@@ -1,7 +1,7 @@
 #include "GrassSpawnActor.h"
 
-#include "generate_graph.h"
 #include "GrassActor.h"
+#include "MapReaderActor.h"
 #include "Util.h"
 
 #include "EngineUtils.h"
@@ -35,12 +35,15 @@ void AGrassSpawnActor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AGrassSpawnActor::UpdateGrass(UPARAM(ref) TArray<FPoint> &Points, AActor *Planet, UStaticMeshComponent *MeshComponent)
+void AGrassSpawnActor::UpdateGrass(AMapReaderActor *MapReader, AActor *Planet, UStaticMeshComponent *MeshComponent)
 {
 	if (!Planet || !MeshComponent || !this->GrassActorClass) return;
 
 	auto world = GetWorld();
 	if (!world) return;
+
+	auto& points = MapReader->GetMap();
+	if (points.size() == 0) return;
 
 	if (this->GrassActors.empty()) {
 		TArray<UStaticMeshComponent*> planet_mesh_components;
@@ -54,8 +57,8 @@ void AGrassSpawnActor::UpdateGrass(UPARAM(ref) TArray<FPoint> &Points, AActor *P
 		physx::PxTriangleMesh* triangles = setup->TriMeshes[0];
 		auto triangle_array = triangles->getTriangles();
 
-		this->GrassActors.resize(Points.Num());
-		for (size_t i = 0; i < Points.Num(); i++) {
+		this->GrassActors.resize(points.size());
+		for (size_t i = 0; i < points.size(); i++) {
 			/*
 			// Get the local location of the vertices of the point's triangle.
 			FVector x, y, z;
@@ -90,16 +93,26 @@ void AGrassSpawnActor::UpdateGrass(UPARAM(ref) TArray<FPoint> &Points, AActor *P
 			*/
 
 			// Spawn grass.
-			AGrassActor* grass = world->SpawnActor<AGrassActor>(this->GrassActorClass, Points[i].transform * Planet->ActorToWorld());
+			//AGrassActor* grass = world->SpawnActor<AGrassActor>(this->GrassActorClass, points[i].transform * Planet->ActorToWorld());
 
-			this->GrassActors[i] = grass;
+			//this->GrassActors[i] = grass;
 		}
 	}
 
-	for (size_t i = 0; i < Points.Num(); i++) {
-		if (this->GrassActors[i]->GetFillStatus() != Points[i].fill_status) {
-			GF_LOG(L"GrassSpawnActor: Setting point %d to fill %d", i, Points[i].fill_status);
-			this->GrassActors[i]->SetFillStatus(Points[i].fill_status);
+	for (size_t i = 0; i < points.size(); i++) {
+		// Temporary (debug):
+		if (points[i].fill_status != PointFillStatus::Empty && !this->GrassActors[i]) {
+			auto location = (points[i].transform * Planet->ActorToWorld()).GetLocation();
+			GF_LOG(L"Spawning %d at %f, %f, %f", i, location.X, location.Y, location.Z);
+			this->GrassActors[i] = world->SpawnActor<AGrassActor>(this->GrassActorClass, points[i].transform * Planet->ActorToWorld());
+			this->GrassActors[i]->SetFillStatus(PointFillStatus::Grass);
+		}
+		continue;
+
+		// Deprecated:
+		if (this->GrassActors[i]->GetFillStatus() != points[i].fill_status) {
+			GF_LOG(L"GrassSpawnActor: Setting point %d to fill %d", i, points[i].fill_status);
+			this->GrassActors[i]->SetFillStatus(points[i].fill_status);
 		}
 	}
 }

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "generate_graph.h"
 #include "GrassActor.h"
+#include "MapReaderActor.h"
 #include "Util.h"
 
 #include "CoreMinimal.h"
@@ -34,7 +34,7 @@ public:
 			CompactNodeTitle = "UpdateGrass",
 			Keywords = "graph grass update"),
 		Category = Game)
-		void UpdateGrass(UPARAM(ref) TArray<FPoint> &Points, AActor *Planet, UStaticMeshComponent *MeshComponent);
+		void UpdateGrass(AMapReaderActor* MapReader, AActor *Planet, UStaticMeshComponent *MeshComponent);
 
 private:
 	UClass* GrassActorClass{ nullptr };

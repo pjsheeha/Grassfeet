@@ -1,9 +1,32 @@
 #include "GraphState.h"
+
+#include "MapReaderActor.h"
 #include "Util.h"
 
 #include <functional>
+#include <limits>
 #include <queue>
+#include <utility>
 #include <vector>
+
+
+AGraphState::AGraphState()
+{
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	PrimaryActorTick.bCanEverTick = true;
+}
+
+// Called when the game starts or when spawned
+void AGraphState::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
+// Called every frame
+void AGraphState::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+}
 
 
 using Point = FPoint;
@@ -19,7 +42,7 @@ struct FloodFillResult {
 
 // Result is only valid when called without set_grass.
 static FloodFillResult flood_fill(
-	UPARAM(ref) TArray<Point>& points,
+	std::vector<Point>& points,
 	uint32_t index,
 	std::vector<bool>& visited,
 	bool set_grass,
@@ -44,7 +67,7 @@ static FloodFillResult flood_fill(
 		points[index].fill_status = PointFillStatus::Grass;
 	}
 
-	std::vector<bool> used(points.Num());
+	std::vector<bool> used(points.size());
 	used[index] = visited[index] = true;
 
 	std::queue<uint32_t> fill_queue;
@@ -100,7 +123,7 @@ static FloodFillResult flood_fill(
 }
 
 static void stepOnFull(
-	UPARAM(ref) TArray<FPoint>& points, uint32_t index, uint32_t max_fill,
+	std::vector<Point>& points, uint32_t index, uint32_t max_fill,
 	bool set_status = true,
 	std::function<void(uint32_t, PointFillStatus)> fill
 	= [](uint32_t, PointFillStatus) {}
@@ -108,6 +131,8 @@ static void stepOnFull(
 	//GF_LOG(L"stepOnFull, index=%d", index);
 
 	Point& point = points[index];
+
+	if (point.fill_status != PointFillStatus::Empty) return;
 
 	auto prev_fill_status = point.fill_status;
 
@@ -124,7 +149,7 @@ static void stepOnFull(
 	uint32_t single_index = 0;
 	bool single_path_only = false;
 
-	std::vector<bool> visited(points.Num());
+	std::vector<bool> visited(points.size());
 
 	for (auto& i : point.next) {
 		std::function<void(uint32_t, PointFillStatus)> fill_nop =
@@ -134,7 +159,7 @@ static void stepOnFull(
 		if (result.filled > 0 && result.filled <= max_fill &&
 			!result.has_cow && !result.has_visited)
 		{
-			std::vector<bool> tmp_visited(points.Num());
+			std::vector<bool> tmp_visited(points.size());
 
 			switch (status) {
 			case Status::None:
@@ -152,20 +177,33 @@ static void stepOnFull(
 				break;
 			}
 		}
+		else if (result.filled > 0 && !result.has_visited) {
+			std::vector<bool> tmp_visited(points.size());
+			if (status == Status::Single) {
+				flood_fill(points, single_index, tmp_visited, set_status, fill);
+				break;
+			}
+			status = Status::Multiple;
+		}
 	}
-	if (status == Status::Single && single_path_only) {
-		std::vector<bool> tmp_visited(points.Num());
-		flood_fill(points, single_index, tmp_visited, set_status, fill);
+	if (status == Status::Single) {
+		if (single_path_only) {
+			std::vector<bool> tmp_visited(points.size());
+			flood_fill(points, single_index, tmp_visited, set_status, fill);
+		}
+		else {
+			GF_LOG(L"Single enclosure with non-path frontier. Not filling.");
+		}
 	}
 
 	if (!set_status)
 		point.fill_status = prev_fill_status;
 }
 
-static void debugStatus(UPARAM(ref) TArray<Point>& points)
+static void debugStatus(std::vector<Point>& points)
 {
 	GF_LOG(L"Path:");
-	for (uint32_t i = 0; i < (uint32_t)points.Num(); i++) {
+	for (uint32_t i = 0; i < points.size(); i++) {
 		if (points[i].fill_status == PointFillStatus::Path) {
 			GF_LOG(L"Path: %d", i);
 		}
@@ -173,7 +211,7 @@ static void debugStatus(UPARAM(ref) TArray<Point>& points)
 	GF_LOG(L"Path: ==============");
 
 	GF_LOG(L"Grass:");
-	for (uint32_t i = 0; i < (uint32_t)points.Num(); i++) {
+	for (uint32_t i = 0; i < points.size(); i++) {
 		if (points[i].fill_status == PointFillStatus::Grass) {
 			GF_LOG(L"Grass: %d", i);
 		}
@@ -181,11 +219,84 @@ static void debugStatus(UPARAM(ref) TArray<Point>& points)
 	GF_LOG(L"Grass: ==============");
 }
 
-void UGraphState::stepOn(UPARAM(ref) TArray<FPoint>& points, int32 index, int32 max_fill) {
-	if (points.Num() <= 0) {
+void AGraphState::stepOn(AMapReaderActor* map_reader, FVector local_position, int32 max_fill) {
+	auto& points = map_reader->GetMap();
+
+	if (points.size() <= 0) {
 		// Not initialized.
 		return;
 	}
-	stepOnFull(points, index, max_fill);
-	//debugStatus(points);
+
+	float min_dist = std::numeric_limits<float>::max();
+	uint32_t min_i = 0;
+	for (uint32_t i = 0; i < points.size(); i++) {
+		FVector delta = points[i].transform.GetLocation() - local_position;
+		float dist = delta.X * delta.X + delta.Y * delta.Y + delta.Z * delta.Z;
+		if (dist < min_dist) {
+			min_dist = dist;
+			min_i = i;
+		}
+	}
+
+	if (LastStep != std::numeric_limits<uint32_t>::max()) {
+		if (LastStep == min_i) {
+			// Do nothing.
+		}
+		else {
+			std::queue<uint32_t> q;
+			std::vector<uint32_t> pred(points.size());
+			std::vector<bool> visited(points.size());
+
+			q.push(LastStep);
+			while (!q.empty()) {
+				auto i = q.front();
+				q.pop();
+
+				std::vector<std::pair<float, uint32_t>> next;
+
+				bool found = false;
+				for (auto j : points[i].next) {
+					if (!visited[j]) {
+						visited[j] = true;
+						pred[j] = i;
+						if (j == min_i) {
+							found = true;
+							break;
+						}
+
+						FVector v1 = points[min_i].transform.GetLocation() - points[i].transform.GetLocation();
+						FVector v2 = points[min_i].transform.GetLocation() - points[j].transform.GetLocation();
+						v1.Normalize();
+						v2.Normalize();
+						float angle = FVector::DotProduct(v1, v2);
+
+						next.push_back(std::make_pair(angle, j));
+					}
+				}
+				if (found) break;
+
+				std::sort(next.begin(), next.end(), std::greater<std::pair<float, uint32_t>>());
+				for (auto& j : next) {
+					q.push(j.second);
+				}
+			}
+
+			if (visited[min_i]) {
+				auto cur = min_i;
+				while (cur != LastStep) {
+					stepOnFull(points, cur, max_fill);
+					cur = pred[cur];
+				}
+			}
+			else {
+				stepOnFull(points, min_i, max_fill);
+			}
+		}
+	}
+	else {
+		stepOnFull(points, min_i, max_fill);
+	}
+	LastStep = min_i;
+
+	// debugStatus(points);
 }
