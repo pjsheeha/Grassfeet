@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "generate_graph.h"
 #include "Containers/array.h"
 #include "Components/StaticMeshComponent.h"
@@ -14,18 +11,13 @@
 #include "StaticMeshResources.h"
 
 
-
-
 // 1. Because we use graph to represent data, we have to ensure the player
 //    never go from one point to a non-neighboring point. And grass can only be
 //    filled by neighboring points.
 
 bool node_relation(TArray<FVector> vertices,TArray<int> triangles ,int triangle_A, int triangle_B,int required_shared_edges)
 {
-
 	int32 shared_edges = 0;
-
-
 
 	for (int a = 0; a < 3; a++)
 	{
@@ -41,7 +33,6 @@ bool node_relation(TArray<FVector> vertices,TArray<int> triangles ,int triangle_
 
 	return shared_edges >= required_shared_edges;
 }
-
 
 void fill_edges(TArray<FPoint> &graph,physx::PxTriangleMesh *triangles)
 {
@@ -146,7 +137,6 @@ Ugenerate_graph::Ugenerate_graph()
 	// ...
 }
 
-
 // Called when the game starts
 void Ugenerate_graph::BeginPlay()
 {
@@ -155,9 +145,6 @@ void Ugenerate_graph::BeginPlay()
 	// ...
 	
 }
-
-
-
 
 // Called every frame
 void Ugenerate_graph::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

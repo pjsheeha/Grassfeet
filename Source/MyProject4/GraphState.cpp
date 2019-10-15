@@ -111,7 +111,6 @@ static void stepOnFull(
 
 	auto prev_fill_status = point.fill_status;
 
-
 	// Mark the current point.
 	fill(index, PointFillStatus::Path);
 	point.fill_status = PointFillStatus::Path;
