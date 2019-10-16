@@ -3,9 +3,11 @@
 #include "MapReaderActor.h"
 #include "Util.h"
 
+#include <algorithm>
 #include <functional>
 #include <limits>
 #include <queue>
+#include <stack>
 #include <utility>
 #include <vector>
 
@@ -243,29 +245,48 @@ void AGraphState::stepOn(AMapReaderActor* map_reader, FVector local_position, in
 			// Do nothing.
 		}
 		else {
-			std::queue<uint32_t> q;
+			// Find the straightest path from last step to this step.
+			// We assume the graph looks like a mesh.
+
+			struct Elem {
+				std::vector<uint32_t> next;
+				uint32_t next_index;
+			};
+			std::stack<Elem> stack;
 			std::vector<uint32_t> pred(points.size());
 			std::vector<bool> visited(points.size());
 
-			q.push(LastStep);
-			while (!q.empty()) {
-				auto i = q.front();
-				q.pop();
+			visited[LastStep] = true;
+
+			do {
+				uint32_t point = 0;
+				if (!stack.empty()) {
+					auto& cur = stack.top();
+					if (cur.next_index >= cur.next.size()) {
+						stack.pop();
+						continue;
+					}
+					point = cur.next[cur.next_index];
+					cur.next_index++;
+				}
+				else {
+					point = LastStep;
+				}
 
 				std::vector<std::pair<float, uint32_t>> next;
 
 				bool found = false;
-				for (auto j : points[i].next) {
+				for (auto j : points[point].next) {
 					if (!visited[j]) {
 						visited[j] = true;
-						pred[j] = i;
+						pred[j] = point;
 						if (j == min_i) {
 							found = true;
 							break;
 						}
 
-						FVector v1 = points[min_i].transform.GetLocation() - points[i].transform.GetLocation();
-						FVector v2 = points[min_i].transform.GetLocation() - points[j].transform.GetLocation();
+						FVector v1 = points[min_i].transform.GetLocation() - points[point].transform.GetLocation();
+						FVector v2 = points[j].transform.GetLocation() - points[point].transform.GetLocation();
 						v1.Normalize();
 						v2.Normalize();
 						float angle = FVector::DotProduct(v1, v2);
@@ -276,10 +297,12 @@ void AGraphState::stepOn(AMapReaderActor* map_reader, FVector local_position, in
 				if (found) break;
 
 				std::sort(next.begin(), next.end(), std::greater<std::pair<float, uint32_t>>());
-				for (auto& j : next) {
-					q.push(j.second);
-				}
-			}
+
+				Elem elem = Elem{ {}, 0 };
+				elem.next.reserve(next.size());
+				for (auto &j : next) elem.next.push_back(j.second);
+				stack.push(elem);
+			} while (!stack.empty());
 
 			if (visited[min_i]) {
 				auto cur = min_i;
