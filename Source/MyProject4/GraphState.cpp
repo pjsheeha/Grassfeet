@@ -183,7 +183,6 @@ static void stepOnFull(
 			std::vector<bool> tmp_visited(points.size());
 			if (status == Status::Single) {
 				flood_fill(points, single_index, tmp_visited, set_status, fill);
-				break;
 			}
 			status = Status::Multiple;
 		}
