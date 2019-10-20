@@ -4,7 +4,7 @@
 AGrassActor::AGrassActor()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 }
 
 // Called when the game starts or when spawned
@@ -17,6 +17,7 @@ void AGrassActor::BeginPlay()
 void AGrassActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	// Note: Tick is turned off!
 }
 
 PointFillStatus AGrassActor::GetFillStatus()
@@ -26,6 +27,8 @@ PointFillStatus AGrassActor::GetFillStatus()
 
 void AGrassActor::SetFillStatus(PointFillStatus Status)
 {
+	if (this->FillStatus == Status) return;
+
 	switch (Status) {
 	case PointFillStatus::Empty:
 		GrassComponent->SetHiddenInGame(true);

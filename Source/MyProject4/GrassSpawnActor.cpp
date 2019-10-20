@@ -14,7 +14,12 @@
 #include "PhysXIncludes.h"
 #include "Runtime/Engine/Public/PhysXPublic.h"
 
+#include <algorithm>
+#include <cmath>
 #include <memory>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 // Sets default values
 AGrassSpawnActor::AGrassSpawnActor()
@@ -35,7 +40,29 @@ void AGrassSpawnActor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AGrassSpawnActor::UpdateGrass(AMapReaderActor *MapReader, AActor *Planet, UStaticMeshComponent *MeshComponent)
+enum Closeness {
+	Close,
+	Near,
+	Far
+};
+
+std::pair<Closeness, float> GetCloseness(FPoint& Point, AActor* Planet, const TArray<AActor*>& Players) {
+	float min_dist = std::numeric_limits<float>::max();
+	for (auto& player : Players) {
+		float dist = FVector::DistSquared((Point.transform * Planet->ActorToWorld()).GetLocation(), player->GetActorLocation());
+		min_dist = std::min(min_dist, dist);
+	}
+	Closeness closeness = Closeness::Far;
+	if (min_dist < 64000) {
+		closeness = Closeness::Close;
+	}
+	else if (min_dist < 400000) {
+		closeness = Closeness::Near;
+	}
+	return { closeness, min_dist };
+}
+
+void AGrassSpawnActor::UpdateGrass(AMapReaderActor *MapReader, AActor *Planet, UStaticMeshComponent *MeshComponent, TArray<AActor*> Players)
 {
 	if (!Planet || !MeshComponent || !this->GrassActorClass) return;
 
@@ -45,76 +72,58 @@ void AGrassSpawnActor::UpdateGrass(AMapReaderActor *MapReader, AActor *Planet, U
 	auto& points = MapReader->GetMap();
 	if (points.size() == 0) return;
 
-	if (this->GrassActors.empty()) {
-		TArray<UStaticMeshComponent*> planet_mesh_components;
-		Planet->GetComponents<UStaticMeshComponent>(planet_mesh_components);
-		if (planet_mesh_components.Num() <= 0) return;
-		auto planet_body_setup = planet_mesh_components[0]->BodyInstance.BodySetup.Get();
-		if (!planet_body_setup) return;
+	std::vector<std::pair<uint32_t, float>> actors_to_spawn;
+	std::unordered_map<uint32_t, AGrassActor*> new_actors;
 
-		auto setup = MeshComponent->BodyInstance.BodySetup.Get();
-		if (!setup) return;
-		physx::PxTriangleMesh* triangles = setup->TriMeshes[0];
-		auto triangle_array = triangles->getTriangles();
+	// Prepare to spawn new actors and update old actors
+	for (uint32_t i = 0; i < points.size(); i++) {
+		if (points[i].fill_status != PointFillStatus::Empty) {
+			Closeness closeness;
+			float dist;
+			std::tie(closeness, dist) = GetCloseness(points[i], Planet, Players);
 
-		this->GrassActors.resize(points.size());
-		for (size_t i = 0; i < points.size(); i++) {
-			/*
-			// Get the local location of the vertices of the point's triangle.
-			FVector x, y, z;
-			if (triangles->getTriangleMeshFlags() & PxTriangleMeshFlag::e16_BIT_INDICES)
-			{
-				auto indices = (reinterpret_cast<const PxU16*>(triangle_array));
-				x = P2UVector(triangles->getVertices()[indices[i * 3 + 0]]);
-				y = P2UVector(triangles->getVertices()[indices[i * 3 + 1]]);
-				z = P2UVector(triangles->getVertices()[indices[i * 3 + 2]]);
+			float x = fmod(points[i].transform.GetLocation().X, 2.0f);
+			float y = fmod(points[i].transform.GetLocation().Y, 2.0f);
+			float z = fmod(points[i].transform.GetLocation().Z, 2.0f);
+			if (x < 0) x += 4;
+			if (y < 0) y += 4;
+			if (z < 0) z += 4;
+			uint32_t sum = static_cast<uint32_t>(x) + static_cast<uint32_t>(y) + static_cast<uint32_t>(z);
+			bool even = (sum % 2 == 0);
+
+			if (closeness == Closeness::Close || (closeness == Closeness::Near && even)) {
+				auto old_actor_it = this->GrassActors.find(i);
+				if (old_actor_it != this->GrassActors.end()) {
+					// Existing
+					old_actor_it->second->SetFillStatus(points[i].fill_status);
+					new_actors[i] = old_actor_it->second;
+				}
+				else {
+					// New
+					actors_to_spawn.push_back(std::make_pair(i, dist));
+				}
 			}
-			else {
-				auto indices = (reinterpret_cast<const PxU32*>(triangle_array));
-				x = P2UVector(triangles->getVertices()[indices[i * 3 + 0]]);
-				y = P2UVector(triangles->getVertices()[indices[i * 3 + 1]]);
-				z = P2UVector(triangles->getVertices()[indices[i * 3 + 2]]);
-			}
-
-			// Get the local location of the point.
-			FVector location = (x + y + z) / 3;
-
-			// Transform point location to world.
-			location = Planet->ActorToWorld().TransformPosition(location);
-
-			// Get grass point and normal.
-			FVector closest, normal;
-			planet_body_setup->GetClosestPointAndNormal(location, Planet->ActorToWorld(), closest, normal);
-
-			// Build grass transform.
-			FTransform spawn_transform{};
-			spawn_transform.SetLocation(closest);
-			spawn_transform.SetRotation(FQuat(UKismetMathLibrary::MakeRotFromZ(normal)));
-			*/
-
-			// Spawn grass.
-			//AGrassActor* grass = world->SpawnActor<AGrassActor>(this->GrassActorClass, points[i].transform * Planet->ActorToWorld());
-
-			//this->GrassActors[i] = grass;
 		}
 	}
 
-	for (size_t i = 0; i < points.size(); i++) {
-		// Temporary (debug):
-		if (points[i].fill_status != PointFillStatus::Empty && !this->GrassActors[i]) {
-			auto location = (points[i].transform * Planet->ActorToWorld()).GetLocation();
-			GF_LOG(L"Spawning %d at %f, %f, %f", i, location.X, location.Y, location.Z);
-			this->GrassActors[i] = world->SpawnActor<AGrassActor>(this->GrassActorClass, points[i].transform * Planet->ActorToWorld());
-			this->GrassActors[i]->SetFillStatus(PointFillStatus::Grass);
-		}
-		continue;
+	// Sort actors to spawn
+	std::sort(actors_to_spawn.begin(), actors_to_spawn.end(), [](const auto &a, const auto &b) { return a.second < b.second; });
 
-		// Deprecated:
-		if (this->GrassActors[i]->GetFillStatus() != points[i].fill_status) {
-			GF_LOG(L"GrassSpawnActor: Setting point %d to fill %d", i, points[i].fill_status);
-			this->GrassActors[i]->SetFillStatus(points[i].fill_status);
+	// Remove unused actors
+	for (auto& actor : this->GrassActors) {
+		if (new_actors.find(actor.first) == new_actors.end()) {
+			actor.second->Destroy();
 		}
 	}
+
+	// Spawn a limited number of new actors
+	for (int i = 0; i < actors_to_spawn.size() && i < 100; i++) {
+		AGrassActor* actor = world->SpawnActor<AGrassActor>(this->GrassActorClass, points[actors_to_spawn[i].first].transform * Planet->ActorToWorld());
+		actor->SetFillStatus(points[actors_to_spawn[i].first].fill_status);
+		new_actors[actors_to_spawn[i].first] = actor;
+	}
+
+	this->GrassActors = std::move(new_actors);
 }
 
 void AGrassSpawnActor::SetGrassActorClass(UClass *Class)

@@ -7,6 +7,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 
+#include <queue>
+#include <unordered_map>
 #include <vector>
 
 #include "GrassSpawnActor.generated.h"
@@ -34,11 +36,11 @@ public:
 			CompactNodeTitle = "UpdateGrass",
 			Keywords = "graph grass update"),
 		Category = Game)
-		void UpdateGrass(AMapReaderActor* MapReader, AActor *Planet, UStaticMeshComponent *MeshComponent);
+		void UpdateGrass(AMapReaderActor* MapReader, AActor *Planet, UStaticMeshComponent *MeshComponent, TArray<AActor*> Players);
 
 private:
 	UClass* GrassActorClass{ nullptr };
-	std::vector<AGrassActor*> GrassActors;
+	std::unordered_map<uint32_t, AGrassActor*> GrassActors;
 
 	UFUNCTION(BlueprintCallable,
 		meta = (DisplayName = "Set Grass Actor Class",
