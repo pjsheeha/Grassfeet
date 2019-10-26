@@ -1,0 +1,10 @@
+{
+	"files.exclude": {
+		"C:/Users/sam/source/Grassfeet/.git": true,
+		"C:/Users/sam/source/Grassfeet/.vs": true,
+		"C:/Users/sam/source/Grassfeet/.vscode": true,
+		"C:/Users/sam/source/Grassfeet/Content": true,
+		"C:/Users/sam/source/Grassfeet/Intermediate": true,
+		"C:/Users/sam/source/Grassfeet/Saved": true
+	}
+}
