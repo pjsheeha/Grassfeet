@@ -40,6 +40,7 @@ public:
 
 private:
 	UClass* GrassActorClass{ nullptr };
+	std::unordered_map<uint32_t, AGrassActor*> PathActors;
 	std::unordered_map<uint32_t, AGrassActor*> GrassActors;
 
 	UFUNCTION(BlueprintCallable,
@@ -48,4 +49,7 @@ private:
 			Keywords = "grass actor class"),
 		Category = Game)
 		void SetGrassActorClass(UClass *Class);
+
+	void UpdatePathActors(AMapReaderActor* MapReader, AActor* Planet, UStaticMeshComponent* MeshComponent, TArray<AActor*> Players);
+	void UpdateGrassActors(AMapReaderActor* MapReader, AActor* Planet, UStaticMeshComponent* MeshComponent, TArray<AActor*> Players);
 };
