@@ -27,6 +27,8 @@ void AGraphState::BeginPlay()
 // Called every frame
 void AGraphState::Tick(float DeltaTime)
 {
+
+	
 	Super::Tick(DeltaTime);
 }
 
@@ -130,7 +132,7 @@ static void stepOnFull(
 	std::function<void(uint32_t, PointFillStatus)> fill
 	= [](uint32_t, PointFillStatus) {}
 ) {
-	//GF_LOG(L"stepOnFull, index=%d", index);
+	GF_LOG(L"stepOnFull, index=%d", index);
 
 	Point& point = points[index];
 
@@ -222,7 +224,6 @@ static void debugStatus(std::vector<Point>& points)
 
 void AGraphState::stepOn(AMapReaderActor* map_reader, FVector local_position, int32 max_fill) {
 	auto& points = map_reader->GetMap();
-
 	if (points.size() <= 0) {
 		// Not initialized.
 		return;
@@ -320,5 +321,4 @@ void AGraphState::stepOn(AMapReaderActor* map_reader, FVector local_position, in
 	}
 	LastStep = min_i;
 
-	// debugStatus(points);
 }
