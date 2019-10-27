@@ -53,7 +53,7 @@ std::pair<Closeness, float> GetCloseness(FPoint& Point, AActor* Planet, const TA
 		min_dist = std::min(min_dist, dist);
 	}
 	Closeness closeness = Closeness::Far;
-	if (min_dist < 64000) {
+	if (min_dist < 50000) {
 		closeness = Closeness::Close;
 	}
 	else if (min_dist < 400000) {
