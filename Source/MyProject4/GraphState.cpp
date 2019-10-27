@@ -27,8 +27,6 @@ void AGraphState::BeginPlay()
 // Called every frame
 void AGraphState::Tick(float DeltaTime)
 {
-
-	
 	Super::Tick(DeltaTime);
 }
 
