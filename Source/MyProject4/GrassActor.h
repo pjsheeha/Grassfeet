@@ -27,7 +27,7 @@ public:
 	void SetFillStatus(PointFillStatus Status);
 
 private:
-	UStaticMeshComponent *GrassComponent, *PregrassComponent;
+	UMeshComponent *GrassComponent, *PregrassComponent;
 	PointFillStatus FillStatus{ PointFillStatus::Empty };
 
 	UFUNCTION(BlueprintCallable,
@@ -35,5 +35,5 @@ private:
 			CompactNodeTitle = "SetGrassMeshes",
 			Keywords = "grass mesh meshes"),
 		Category = Game)
-		void SetGrassMeshes(UStaticMeshComponent *Grass, UStaticMeshComponent *Pregrass);
+		void SetGrassMeshes(UMeshComponent *Grass, UMeshComponent *Pregrass);
 };

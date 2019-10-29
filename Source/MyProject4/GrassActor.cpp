@@ -45,7 +45,7 @@ void AGrassActor::SetFillStatus(PointFillStatus Status)
 	this->FillStatus = Status;
 }
 
-void AGrassActor::SetGrassMeshes(UStaticMeshComponent *Grass, UStaticMeshComponent *Pregrass) {
+void AGrassActor::SetGrassMeshes(UMeshComponent *Grass, UMeshComponent *Pregrass) {
 	this->GrassComponent = Grass;
 	this->PregrassComponent = Pregrass;
 }
