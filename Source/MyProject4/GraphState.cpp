@@ -8,6 +8,7 @@
 #include <limits>
 #include <queue>
 #include <stack>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -124,13 +125,13 @@ static FloodFillResult flood_fill(
 	return result;
 }
 
-static void stepOnFull(
+static void stepOnWithoutGroupingFull(
 	std::vector<Point>& points, uint32_t index, uint32_t max_fill,
 	bool set_status = true,
 	std::function<void(uint32_t, PointFillStatus)> fill
 	= [](uint32_t, PointFillStatus) {}
 ) {
-	GF_LOG(L"stepOnFull, index=%d", index);
+	GF_LOG(L"stepOnWithoutGroupingFull, index=%d", index);
 
 	Point& point = points[index];
 
@@ -227,6 +228,13 @@ void AGraphState::stepOn(AMapReaderActor* map_reader, FVector local_position, in
 		return;
 	}
 
+	stepOnWithoutGrouping(map_reader, local_position, max_fill);
+	adjustGroups(map_reader);
+}
+
+void AGraphState::stepOnWithoutGrouping(AMapReaderActor * map_reader, FVector local_position, int32 max_fill) {
+	auto& points = map_reader->GetMap();
+
 	float min_dist = std::numeric_limits<float>::max();
 	uint32_t min_i = 0;
 	for (uint32_t i = 0; i < points.size(); i++) {
@@ -305,18 +313,32 @@ void AGraphState::stepOn(AMapReaderActor* map_reader, FVector local_position, in
 			if (visited[min_i]) {
 				auto cur = min_i;
 				while (cur != LastStep) {
-					stepOnFull(points, cur, max_fill);
+					stepOnWithoutGroupingFull(points, cur, max_fill);
 					cur = pred[cur];
 				}
 			}
 			else {
-				stepOnFull(points, min_i, max_fill);
+				stepOnWithoutGroupingFull(points, min_i, max_fill);
 			}
 		}
 	}
 	else {
-		stepOnFull(points, min_i, max_fill);
+		stepOnWithoutGroupingFull(points, min_i, max_fill);
 	}
 	LastStep = min_i;
+}
 
+void AGraphState::adjustGroups(AMapReaderActor* map_reader) {
+	std::unordered_set<uint32_t> groups;
+	for (auto& point : map_reader->GetMap()) {
+		if (point.fill_status == PointFillStatus::Grass) {
+			groups.insert(point.group);
+		}
+	}
+
+	for (auto& point : map_reader->GetMap()) {
+		if (groups.find(point.group) != groups.end()) {
+			point.fill_status = PointFillStatus::Grass;
+		}
+	}
 }

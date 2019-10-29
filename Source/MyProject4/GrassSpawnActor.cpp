@@ -47,14 +47,14 @@ enum Closeness {
 	Far
 };
 
-std::pair<Closeness, float> GetCloseness(FTransform& Transform, AActor* Planet, const TArray<AActor*>& Players) {
+std::pair<Closeness, float> GetCloseness(FTransform& Transform, AActor* Planet, const TArray<AActor*>& Players, bool isPath) {
 	float min_dist = std::numeric_limits<float>::max();
 	for (auto& player : Players) {
 		float dist = FVector::DistSquared((Transform * Planet->ActorToWorld()).GetLocation(), player->GetActorLocation());
 		min_dist = std::min(min_dist, dist);
 	}
 	Closeness closeness = Closeness::Far;
-	if (min_dist < 50000) {
+	if (min_dist < (isPath ? 50000: 160000)) {
 		closeness = Closeness::Close;
 	}
 	else if (min_dist < 400000) {
@@ -63,14 +63,14 @@ std::pair<Closeness, float> GetCloseness(FTransform& Transform, AActor* Planet, 
 	return { closeness, min_dist };
 }
 
-void AGrassSpawnActor::UpdateGrass(AMapReaderActor* MapReader, AActor* Planet, UStaticMeshComponent* MeshComponent, TArray<AActor*> Players)
+void AGrassSpawnActor::UpdateGrass(AMapReaderActor* MapReader, AActor* Planet, UMeshComponent* MeshComponent, TArray<AActor*> Players)
 {
 	if (!Planet || !MeshComponent || !this->GrassActorClass) return;
 	this->UpdatePathActors(MapReader, Planet, MeshComponent, Players);
 	this->UpdateGrassActors(MapReader, Planet, MeshComponent, Players);
 }
 
-void AGrassSpawnActor::UpdatePathActors(AMapReaderActor* MapReader, AActor* Planet, UStaticMeshComponent* MeshComponent, TArray<AActor*> Players)
+void AGrassSpawnActor::UpdatePathActors(AMapReaderActor* MapReader, AActor* Planet, UMeshComponent* MeshComponent, TArray<AActor*> Players)
 {
 	auto world = GetWorld();
 	if (!world) return;
@@ -86,7 +86,7 @@ void AGrassSpawnActor::UpdatePathActors(AMapReaderActor* MapReader, AActor* Plan
 		if (points[i].fill_status == PointFillStatus::Path) {
 			Closeness closeness;
 			float dist;
-			std::tie(closeness, dist) = GetCloseness(points[i].transform, Planet, Players);
+			std::tie(closeness, dist) = GetCloseness(points[i].transform, Planet, Players, true);
 
 			float x = fmod(points[i].transform.GetLocation().X, 2.0f);
 			float y = fmod(points[i].transform.GetLocation().Y, 2.0f);
@@ -131,7 +131,7 @@ void AGrassSpawnActor::UpdatePathActors(AMapReaderActor* MapReader, AActor* Plan
 	this->PathActors = std::move(new_actors);
 }
 
-void AGrassSpawnActor::UpdateGrassActors(AMapReaderActor* MapReader, AActor* Planet, UStaticMeshComponent* MeshComponent, TArray<AActor*> Players)
+void AGrassSpawnActor::UpdateGrassActors(AMapReaderActor* MapReader, AActor* Planet, UMeshComponent* MeshComponent, TArray<AActor*> Players)
 {
 	auto world = GetWorld();
 	if (!world) return;
@@ -156,7 +156,7 @@ void AGrassSpawnActor::UpdateGrassActors(AMapReaderActor* MapReader, AActor* Pla
 	for (uint32_t i: grass_groups) {
 		Closeness closeness;
 		float dist;
-		std::tie(closeness, dist) = GetCloseness(group_transforms[i], Planet, Players);
+		std::tie(closeness, dist) = GetCloseness(group_transforms[i], Planet, Players, false);
 
 		float x = fmod(group_transforms[i].GetLocation().X, 2.0f);
 		float y = fmod(group_transforms[i].GetLocation().Y, 2.0f);

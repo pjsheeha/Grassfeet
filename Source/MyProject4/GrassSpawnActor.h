@@ -36,7 +36,7 @@ public:
 			CompactNodeTitle = "UpdateGrass",
 			Keywords = "graph grass update"),
 		Category = Game)
-		void UpdateGrass(AMapReaderActor* MapReader, AActor *Planet, UStaticMeshComponent *MeshComponent, TArray<AActor*> Players);
+		void UpdateGrass(AMapReaderActor* MapReader, AActor *Planet, UMeshComponent *MeshComponent, TArray<AActor*> Players);
 
 private:
 	UClass* GrassActorClass{ nullptr };
@@ -50,6 +50,6 @@ private:
 		Category = Game)
 		void SetGrassActorClass(UClass *Class);
 
-	void UpdatePathActors(AMapReaderActor* MapReader, AActor* Planet, UStaticMeshComponent* MeshComponent, TArray<AActor*> Players);
-	void UpdateGrassActors(AMapReaderActor* MapReader, AActor* Planet, UStaticMeshComponent* MeshComponent, TArray<AActor*> Players);
+	void UpdatePathActors(AMapReaderActor* MapReader, AActor* Planet, UMeshComponent* MeshComponent, TArray<AActor*> Players);
+	void UpdateGrassActors(AMapReaderActor* MapReader, AActor* Planet, UMeshComponent* MeshComponent, TArray<AActor*> Players);
 };

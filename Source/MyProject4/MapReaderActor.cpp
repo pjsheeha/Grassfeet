@@ -15,6 +15,7 @@
 #include "StaticMeshResources.h"
 
 #include <cstdio>
+#include <random>
 #include <string>
 #include <vector>
 
@@ -149,6 +150,15 @@ void AMapReaderActor::InitializeMap() {
 	fclose(f);
 
 	if (res) {
+		std::random_device rd;
+		std::mt19937 gen(rd());
+		std::uniform_real_distribution<float> dis(0.0, 360.0);
+
+		for (auto& transform : groups) {
+			auto rot = UKismetMathLibrary::ComposeRotators(FRotator(0.0f, dis(gen), 0.0f), transform.GetRotation().Rotator());
+			transform.SetRotation(FQuat(rot));
+		}
+
 		this->Map = array;
 		this->Groups = groups;
 	}
