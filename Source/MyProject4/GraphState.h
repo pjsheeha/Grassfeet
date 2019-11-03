@@ -38,4 +38,7 @@ public:
 
 private:
 	uint32_t LastStep{ std::numeric_limits<uint32_t>::max() };
+
+	void stepOnWithoutGrouping(AMapReaderActor* map_reader, FVector local_position, int32 max_fill);
+	void adjustGroups(AMapReaderActor* map_reader);
 };
