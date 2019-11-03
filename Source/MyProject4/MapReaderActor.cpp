@@ -152,11 +152,14 @@ void AMapReaderActor::InitializeMap() {
 	if (res) {
 		std::random_device rd;
 		std::mt19937 gen(rd());
-		std::uniform_real_distribution<float> dis(0.0, 360.0);
+		std::uniform_real_distribution<float> rand_rot(0.0f, 360.0f);
+		std::uniform_real_distribution<float> rand_scale(0.5f, 1.2f);
 
 		for (auto& transform : groups) {
-			auto rot = UKismetMathLibrary::ComposeRotators(FRotator(0.0f, dis(gen), 0.0f), transform.GetRotation().Rotator());
+			auto rot = UKismetMathLibrary::ComposeRotators(FRotator(0.0f, rand_rot(gen), 0.0f), transform.GetRotation().Rotator());
 			transform.SetRotation(FQuat(rot));
+			auto scale = rand_scale(gen);
+			transform.SetScale3D(FVector(scale, scale, scale));
 		}
 
 		this->Map = array;
