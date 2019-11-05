@@ -37,10 +37,10 @@ using Point = FPoint;
 struct FloodFillResult {
 	uint32_t filled;
 	bool has_visited;
-	bool has_cow;
+	std::vector<uint32_t> cows;
 	bool path_only;
 
-	FloodFillResult() : filled(), has_visited(), has_cow(), path_only(true) {}
+	FloodFillResult() : filled(), has_visited(), cows(), path_only(true) {}
 };
 
 // Result is only valid when called without set_grass.
@@ -61,8 +61,7 @@ static FloodFillResult flood_fill(
 		return result;
 	}
 	if (points[index].has_cow) {
-		result.has_cow = true;
-		return result;
+		result.cows.push_back(index);
 	}
 	result.filled++;
 	fill(index, PointFillStatus::Grass);
@@ -89,8 +88,7 @@ static FloodFillResult flood_fill(
 						return result;
 					}
 					if (points[i].has_cow) {
-						result.has_cow = true;
-						return result;
+						result.cows.push_back(i);
 					}
 					result.filled++;
 					fill(index, PointFillStatus::Grass);
@@ -102,8 +100,7 @@ static FloodFillResult flood_fill(
 					break;
 				case PointFillStatus::Path:
 					if (points[i].has_cow) {
-						result.has_cow = true;
-						return result;
+						result.cows.push_back(i);
 					}
 					fill(index, PointFillStatus::Grass);
 					if (set_grass) {
@@ -112,8 +109,7 @@ static FloodFillResult flood_fill(
 					break;
 				case PointFillStatus::Grass:
 					if (points[i].has_cow) {
-						result.has_cow = true;
-						return result;
+						result.cows.push_back(i);
 					}
 					result.path_only = false;
 					break;
@@ -127,6 +123,7 @@ static FloodFillResult flood_fill(
 
 static void stepOnWithoutGroupingFull(
 	std::vector<Point>& points, uint32_t index, uint32_t max_fill,
+	StepOnResult &step_on_result,
 	bool set_status = true,
 	std::function<void(uint32_t, PointFillStatus)> fill
 	= [](uint32_t, PointFillStatus) {}
@@ -135,7 +132,10 @@ static void stepOnWithoutGroupingFull(
 
 	Point& point = points[index];
 
-	if (point.fill_status != PointFillStatus::Empty) return;
+	if (point.fill_status != PointFillStatus::Empty) {
+		step_on_result.enclosures = 0;
+		return;
+	}
 
 	auto prev_fill_status = point.fill_status;
 
@@ -153,14 +153,25 @@ static void stepOnWithoutGroupingFull(
 	bool single_path_only = false;
 
 	std::vector<bool> visited(points.size());
+	std::vector<uint32_t> cows;
+	uint32_t enclosures = 0;
 
 	for (auto& i : point.next) {
 		std::function<void(uint32_t, PointFillStatus)> fill_nop =
 			[](uint32_t, PointFillStatus) {};
 		auto result = flood_fill(points, i, visited, false, fill_nop);
 
+		if (result.filled > 0 && result.filled <= max_fill && !result.has_visited) {
+			enclosures++;
+		}
 		if (result.filled > 0 && result.filled <= max_fill &&
-			!result.has_cow && !result.has_visited)
+			!result.cows.empty() && !result.has_visited) {
+			// Has cow
+			cows.insert(cows.end(), result.cows.begin(), result.cows.end());
+		}
+
+		if (result.filled > 0 && result.filled <= max_fill &&
+			result.cows.empty() && !result.has_visited)
 		{
 			std::vector<bool> tmp_visited(points.size());
 
@@ -200,6 +211,12 @@ static void stepOnWithoutGroupingFull(
 
 	if (!set_status)
 		point.fill_status = prev_fill_status;
+
+	step_on_result.cows.insert(cows.begin(), cows.end());
+	if (step_on_result.enclosures != 1 || enclosures != 1) {
+		step_on_result.warning_cows.insert(cows.begin(), cows.end());
+	}
+	step_on_result.enclosures = enclosures;
 }
 
 static void debugStatus(std::vector<Point>& points)
@@ -228,8 +245,18 @@ void AGraphState::stepOn(AMapReaderActor* map_reader, FVector local_position, in
 		return;
 	}
 
+	this->step_on_result.cows.clear();
+	this->step_on_result.warning_cows.clear();
+
 	stepOnWithoutGrouping(map_reader, local_position, max_fill);
 	adjustGroups(map_reader);
+
+	for (auto& c : step_on_result.cows) {
+		GF_LOG(L"Cow: %d", c);
+	}
+	for (auto& c : step_on_result.warning_cows) {
+		GF_LOG(L"Warning Cow: %d", c);
+	}
 }
 
 void AGraphState::stepOnWithoutGrouping(AMapReaderActor * map_reader, FVector local_position, int32 max_fill) {
@@ -313,17 +340,17 @@ void AGraphState::stepOnWithoutGrouping(AMapReaderActor * map_reader, FVector lo
 			if (visited[min_i]) {
 				auto cur = min_i;
 				while (cur != LastStep) {
-					stepOnWithoutGroupingFull(points, cur, max_fill);
+					stepOnWithoutGroupingFull(points, cur, max_fill, this->step_on_result);
 					cur = pred[cur];
 				}
 			}
 			else {
-				stepOnWithoutGroupingFull(points, min_i, max_fill);
+				stepOnWithoutGroupingFull(points, min_i, max_fill, this->step_on_result);
 			}
 		}
 	}
 	else {
-		stepOnWithoutGroupingFull(points, min_i, max_fill);
+		stepOnWithoutGroupingFull(points, min_i, max_fill, this->step_on_result);
 	}
 	LastStep = min_i;
 }
