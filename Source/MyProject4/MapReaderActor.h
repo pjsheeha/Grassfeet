@@ -10,6 +10,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 
+#include <bitset>
 #include <vector>
 
 #include "MapReaderActor.generated.h"
@@ -21,13 +22,13 @@ enum class PointFillStatus : uint8 {
 };
 struct FPoint {
 	PointFillStatus fill_status;
-	bool has_cow;
+	std::bitset<32> cows{};
 	FTransform transform{};
 	uint32_t group{};
 
 	std::vector<uint32_t> next;
 
-	FPoint() : fill_status(PointFillStatus::Empty), has_cow() {}
+	FPoint() : fill_status(PointFillStatus::Empty) {}
 
 	bool isGrass()
 	{

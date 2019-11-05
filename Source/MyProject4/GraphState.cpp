@@ -60,8 +60,10 @@ static FloodFillResult flood_fill(
 	if (points[index].fill_status != PointFillStatus::Empty) {
 		return result;
 	}
-	if (points[index].has_cow) {
-		result.cows.push_back(index);
+	if (points[index].cows.any()) {
+		for (size_t i = 0; i < points[index].cows.size(); i++) {
+			result.cows.push_back(i);
+		}
 	}
 	result.filled++;
 	fill(index, PointFillStatus::Grass);
@@ -87,8 +89,10 @@ static FloodFillResult flood_fill(
 						result.has_visited = true;
 						return result;
 					}
-					if (points[i].has_cow) {
-						result.cows.push_back(i);
+					if (points[index].cows.any()) {
+						for (size_t i = 0; i < points[index].cows.size(); i++) {
+							result.cows.push_back(i);
+						}
 					}
 					result.filled++;
 					fill(index, PointFillStatus::Grass);
@@ -99,8 +103,10 @@ static FloodFillResult flood_fill(
 					fill_queue.push(i);
 					break;
 				case PointFillStatus::Path:
-					if (points[i].has_cow) {
-						result.cows.push_back(i);
+					if (points[index].cows.any()) {
+						for (size_t i = 0; i < points[index].cows.size(); i++) {
+							result.cows.push_back(i);
+						}
 					}
 					fill(index, PointFillStatus::Grass);
 					if (set_grass) {
@@ -108,8 +114,10 @@ static FloodFillResult flood_fill(
 					}
 					break;
 				case PointFillStatus::Grass:
-					if (points[i].has_cow) {
-						result.cows.push_back(i);
+					if (points[index].cows.any()) {
+						for (size_t i = 0; i < points[index].cows.size(); i++) {
+							result.cows.push_back(i);
+						}
 					}
 					result.path_only = false;
 					break;

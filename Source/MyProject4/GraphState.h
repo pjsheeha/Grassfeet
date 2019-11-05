@@ -21,7 +21,7 @@ struct StepOnResult {
 
 
 /**
- * 
+ *
  */
 UCLASS()
 class MYPROJECT4_API AGraphState : public AActor
