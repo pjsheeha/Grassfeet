@@ -192,8 +192,24 @@ void AGrassSpawnActor::UpdateGrassActors(AMapReaderActor* MapReader, AActor* Pla
 	}
 
 	// Spawn a limited number of new actors
-	for (int i = 0; i < actors_to_spawn.size() && i < 100; i++) {
-		AGrassActor* actor = world->SpawnActor<AGrassActor>(this->GrassActorClass, group_transforms[actors_to_spawn[i].first] * Planet->ActorToWorld());
+	for (int i = 0; i < actors_to_spawn.size() && i < 20; i++) {
+		auto group_transform = group_transforms[actors_to_spawn[i].first];
+		auto group_scale = group_transform.GetScale3D();	// Set scale separately on components
+		group_transform.SetScale3D(FVector::OneVector);
+
+		AGrassActor* actor = world->SpawnActor<AGrassActor>(this->GrassActorClass, group_transform * Planet->ActorToWorld());
+		for (auto c : actor->GetComponentsByClass(UStaticMeshComponent::StaticClass())) {
+			auto component = dynamic_cast<UStaticMeshComponent*>(c);
+
+			auto transform = component->GetComponentTransform();
+			auto scale = transform.GetScale3D();
+			scale.X *= group_scale.X;
+			scale.Y *= group_scale.Y;
+			scale.Z *= group_scale.Z;
+			transform.SetScale3D(scale);
+
+			component->SetWorldTransform(transform);
+		}
 		actor->SetFillStatus(PointFillStatus::Grass);
 		new_actors[actors_to_spawn[i].first] = actor;
 	}
