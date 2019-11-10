@@ -101,10 +101,10 @@ void UCowComponent::CowStep(AMapReaderActor* map_reader, FVector local_position,
 		return;
 	}
 	else {
-		points[prev_step].has_cow.set(cow_id, true);
+		points[min_i].cows.set(cow_id, true);
 
-		if(prev_step <= points.size()) {
-			points[prev_step].has_cow.set(cow_id,false);
+		if (prev_step <= points.size()) {
+			points[prev_step].cows.set(cow_id, false);
 		}
 		prev_step = min_i;
 	}
