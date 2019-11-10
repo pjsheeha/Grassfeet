@@ -1,10 +1,13 @@
 #include "GrassActor.h"
 
+#include "Engine/Classes/Components/MeshComponent.h"
+#include "Engine/Classes/Components/SkeletalMeshComponent.h"
+
 // Sets default values
 AGrassActor::AGrassActor()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 }
 
 // Called when the game starts or when spawned
@@ -17,7 +20,8 @@ void AGrassActor::BeginPlay()
 void AGrassActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	// Note: Tick is turned off!
+
+	GrassComponent->SetMorphTarget(L"Cube_000", 0.1f);
 }
 
 PointFillStatus AGrassActor::GetFillStatus()
@@ -45,7 +49,7 @@ void AGrassActor::SetFillStatus(PointFillStatus Status)
 	this->FillStatus = Status;
 }
 
-void AGrassActor::SetGrassMeshes(UMeshComponent *Grass, UMeshComponent *Pregrass) {
+void AGrassActor::SetGrassMeshes(USkeletalMeshComponent *Grass, UMeshComponent *Pregrass) {
 	this->GrassComponent = Grass;
 	this->PregrassComponent = Pregrass;
 }

@@ -3,6 +3,8 @@
 #include "MapReaderActor.h"
 
 #include "CoreMinimal.h"
+#include "Engine/Classes/Components/MeshComponent.h"
+#include "Engine/Classes/Components/SkeletalMeshComponent.h"
 #include "GameFramework/Actor.h"
 #include "GrassActor.generated.h"
 
@@ -27,7 +29,8 @@ public:
 	void SetFillStatus(PointFillStatus Status);
 
 private:
-	UMeshComponent *GrassComponent, *PregrassComponent;
+	USkeletalMeshComponent* GrassComponent;
+	UMeshComponent* PregrassComponent;
 	PointFillStatus FillStatus{ PointFillStatus::Empty };
 
 	UFUNCTION(BlueprintCallable,
@@ -35,5 +38,5 @@ private:
 			CompactNodeTitle = "SetGrassMeshes",
 			Keywords = "grass mesh meshes"),
 		Category = Game)
-		void SetGrassMeshes(UMeshComponent *Grass, UMeshComponent *Pregrass);
+		void SetGrassMeshes(USkeletalMeshComponent *Grass, UMeshComponent *Pregrass);
 };
