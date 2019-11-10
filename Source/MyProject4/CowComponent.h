@@ -20,21 +20,21 @@ public:
 			CompactNodeTitle = "Eat Grass",
 			Keywords = "cow eat grass"),
 		Category = Game)
-		void EatGrass( AMapReaderActor* MapReader, FVector local_position, float eat_range);
+		void EatGrass( AMapReaderActor* map_reader, FVector local_position, float eat_range);
 
 	UFUNCTION(BlueprintCallable,
 		meta = (DisplayName = "Cow Step",
 			CompactNodeTitle = "Cow Step",
 			Keywords = "cow step move"),
 		Category = Game)
-		void CowStep(AMapReaderActor* MapReader, FVector local_position);
+		void CowStep(AMapReaderActor* map_reader, FVector local_position, int cow_id);
 
 	UFUNCTION(BlueprintCallable,
 		meta = (DisplayName = "On Grass",
 			CompactNodeTitle = "On Grass",
 			Keywords = "cow on grass"),
 		Category = Game)
-		bool OnGrass(AMapReaderActor* MapReader, FVector local_position);
+		bool OnGrass(AMapReaderActor* map_reader, FVector local_position);
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

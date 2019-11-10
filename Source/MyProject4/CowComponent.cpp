@@ -35,8 +35,8 @@ void UCowComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 	// ...
 }
 
-void UCowComponent::EatGrass(AMapReaderActor* MapReader, FVector local_position, float eat_range) {
-	auto& points = MapReader->GetMap();
+void UCowComponent::EatGrass(AMapReaderActor* map_reader, FVector local_position, float eat_range) {
+	auto& points = map_reader->GetMap();
 
 	if (points.size() <= 0) {
 		// Not initialized.
@@ -77,8 +77,8 @@ void UCowComponent::EatGrass(AMapReaderActor* MapReader, FVector local_position,
 	}
 }
 
-void UCowComponent::CowStep(AMapReaderActor* MapReader, FVector local_position) {
-	auto& points = MapReader->GetMap();
+void UCowComponent::CowStep(AMapReaderActor* map_reader, FVector local_position,int cow_id) {
+	auto& points = map_reader->GetMap();
 
 	if (points.size() <= 0) {
 		// Not initialized.
@@ -101,18 +101,18 @@ void UCowComponent::CowStep(AMapReaderActor* MapReader, FVector local_position) 
 		return;
 	}
 	else {
-		points[min_i].has_cow = true;
+		points[prev_step].has_cow.set(cow_id, true);
 
 		if(prev_step <= points.size()) {
-			points[prev_step].has_cow = false;
+			points[prev_step].has_cow.set(cow_id,false);
 		}
 		prev_step = min_i;
 	}
 }
 
 
-bool UCowComponent::OnGrass(AMapReaderActor* MapReader, FVector local_position) {
-	auto& points = MapReader->GetMap();
+bool UCowComponent::OnGrass(AMapReaderActor* map_reader, FVector local_position) {
+	auto& points = map_reader->GetMap();
 
 	if (points.size() <= 0) {
 		// Not initialized.
