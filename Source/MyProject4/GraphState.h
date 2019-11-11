@@ -6,12 +6,22 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 
 #include <limits>
+#include <unordered_set>
 
 #include "GraphState.generated.h"
 
 
+struct StepOnResult {
+	std::unordered_set<uint32_t> cows;
+	std::unordered_set<uint32_t> warning_cows;
+	uint32_t enclosures;
+
+	StepOnResult() : enclosures() {}
+};
+
+
 /**
- * 
+ *
  */
 UCLASS()
 class MYPROJECT4_API AGraphState : public AActor
@@ -38,6 +48,7 @@ public:
 
 private:
 	uint32_t LastStep{ std::numeric_limits<uint32_t>::max() };
+	StepOnResult step_on_result;
 
 	void stepOnWithoutGrouping(AMapReaderActor* map_reader, FVector local_position, int32 max_fill);
 	void adjustGroups(AMapReaderActor* map_reader);
