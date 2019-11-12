@@ -246,7 +246,7 @@ static void debugStatus(std::vector<Point>& points)
 	GF_LOG(L"Grass: ==============");
 }
 
-void AGraphState::stepOn(AMapReaderActor* map_reader, FVector local_position, int32 max_fill) {
+void AGraphState::stepOn(AMapReaderActor* map_reader, FVector local_position, int32 max_fill, TArray<int32> warn_cows) {
 	auto& points = map_reader->GetMap();
 	if (points.size() <= 0) {
 		// Not initialized.
@@ -261,6 +261,7 @@ void AGraphState::stepOn(AMapReaderActor* map_reader, FVector local_position, in
 
 	for (auto& c : step_on_result.cows) {
 		GF_LOG(L"Cow: %d", c);
+		warn_cows.Add(c);
 	}
 	for (auto& c : step_on_result.warning_cows) {
 		GF_LOG(L"Warning Cow: %d", c);
