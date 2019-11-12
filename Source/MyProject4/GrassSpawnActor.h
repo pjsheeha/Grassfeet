@@ -52,4 +52,5 @@ private:
 
 	void UpdatePathActors(AMapReaderActor* MapReader, AActor* Planet, UMeshComponent* MeshComponent, TArray<AActor*> Players);
 	void UpdateGrassActors(AMapReaderActor* MapReader, AActor* Planet, UMeshComponent* MeshComponent, TArray<AActor*> Players);
+	void ClearFootsteps(AMapReaderActor* MapReader);
 };

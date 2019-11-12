@@ -283,7 +283,8 @@ void AGraphState::stepOnWithoutGrouping(AMapReaderActor * map_reader, FVector lo
 
 	if (LastStep != std::numeric_limits<uint32_t>::max()) {
 		if (LastStep == min_i) {
-			// Do nothing.
+			// Same step
+			points[min_i].footstep = true;
 		}
 		else {
 			// Find the straightest path from last step to this step.
@@ -348,16 +349,19 @@ void AGraphState::stepOnWithoutGrouping(AMapReaderActor * map_reader, FVector lo
 			if (visited[min_i]) {
 				auto cur = min_i;
 				while (cur != LastStep) {
+					points[min_i].footstep = true;
 					stepOnWithoutGroupingFull(points, cur, max_fill, this->step_on_result);
 					cur = pred[cur];
 				}
 			}
 			else {
+				points[min_i].footstep = true;
 				stepOnWithoutGroupingFull(points, min_i, max_fill, this->step_on_result);
 			}
 		}
 	}
 	else {
+		points[min_i].footstep = true;
 		stepOnWithoutGroupingFull(points, min_i, max_fill, this->step_on_result);
 	}
 	LastStep = min_i;
