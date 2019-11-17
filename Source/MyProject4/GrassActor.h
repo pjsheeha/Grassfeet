@@ -3,8 +3,21 @@
 #include "MapReaderActor.h"
 
 #include "CoreMinimal.h"
+#include "Engine/Classes/Components/MeshComponent.h"
+#include "Engine/Classes/Components/SkeletalMeshComponent.h"
 #include "GameFramework/Actor.h"
 #include "GrassActor.generated.h"
+
+class GrassAnimator
+{
+public:
+	float Tick(float DeltaTime);
+	void Footstep();
+
+private:
+	float GrassAnimTime = 0.0f;
+	int32_t GrassAnimTick = -1;
+};
 
 UCLASS()
 class MYPROJECT4_API AGrassActor : public AActor
@@ -26,14 +39,18 @@ public:
 	PointFillStatus GetFillStatus();
 	void SetFillStatus(PointFillStatus Status);
 
+	void Footstep();
+
 private:
-	UMeshComponent *GrassComponent, *PregrassComponent;
+	USkeletalMeshComponent* GrassComponent;
+	UMeshComponent* PregrassComponent;
 	PointFillStatus FillStatus{ PointFillStatus::Empty };
+	GrassAnimator Animator;
 
 	UFUNCTION(BlueprintCallable,
 		meta = (DisplayName = "Set Grass Meshes",
 			CompactNodeTitle = "SetGrassMeshes",
 			Keywords = "grass mesh meshes"),
 		Category = Game)
-		void SetGrassMeshes(UMeshComponent *Grass, UMeshComponent *Pregrass);
+		void SetGrassMeshes(USkeletalMeshComponent *Grass, UMeshComponent *Pregrass);
 };

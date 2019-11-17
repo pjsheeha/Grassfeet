@@ -22,6 +22,7 @@ enum class PointFillStatus : uint8 {
 };
 struct FPoint {
 	PointFillStatus fill_status;
+	bool footstep{ false };
 	std::bitset<32> cows{};
 	FTransform transform{};
 	uint32_t group{};

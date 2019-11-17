@@ -68,6 +68,7 @@ void AGrassSpawnActor::UpdateGrass(AMapReaderActor* MapReader, AActor* Planet, U
 	if (!Planet || !MeshComponent || !this->GrassActorClass) return;
 	this->UpdatePathActors(MapReader, Planet, MeshComponent, Players);
 	this->UpdateGrassActors(MapReader, Planet, MeshComponent, Players);
+	this->ClearFootsteps(MapReader);
 }
 
 void AGrassSpawnActor::UpdatePathActors(AMapReaderActor* MapReader, AActor* Planet, UMeshComponent* MeshComponent, TArray<AActor*> Players)
@@ -139,12 +140,14 @@ void AGrassSpawnActor::UpdateGrassActors(AMapReaderActor* MapReader, AActor* Pla
 	auto& group_transforms= MapReader->GetGroups();
 
 	std::unordered_set<uint32_t> grass_groups;
+	std::unordered_set<uint32_t> footstep_groups;
 	{
 		auto& points = MapReader->GetMap();
 		if (points.size() == 0) return;
 		for (uint32_t i = 0; i < points.size(); i++) {
 			if (points[i].fill_status == PointFillStatus::Grass) {
 				grass_groups.insert(points[i].group);
+				if (points[i].footstep) footstep_groups.insert(points[i].group);
 			}
 		}
 	}
@@ -172,6 +175,10 @@ void AGrassSpawnActor::UpdateGrassActors(AMapReaderActor* MapReader, AActor* Pla
 			if (old_actor_it != this->GrassActors.end()) {
 				// Existing
 				old_actor_it->second->SetFillStatus(PointFillStatus::Grass);
+				if (footstep_groups.find(i) != footstep_groups.end()) {
+					old_actor_it->second->Footstep();
+				}
+
 				new_actors[i] = old_actor_it->second;
 			}
 			else {
@@ -211,9 +218,24 @@ void AGrassSpawnActor::UpdateGrassActors(AMapReaderActor* MapReader, AActor* Pla
 			component->SetWorldTransform(transform);
 		}
 		actor->SetFillStatus(PointFillStatus::Grass);
+		if (footstep_groups.find(actors_to_spawn[i].first) != footstep_groups.end()) {
+			actor->Footstep();
+		}
+
 		new_actors[actors_to_spawn[i].first] = actor;
 	}
 	this->GrassActors = std::move(new_actors);
+}
+
+void AGrassSpawnActor::ClearFootsteps(AMapReaderActor* MapReader)
+{
+	auto world = GetWorld();
+	if (!world) return;
+
+	auto& points = MapReader->GetMap();
+	for (auto& point : points) {
+		point.footstep = false;
+	}
 }
 
 void AGrassSpawnActor::SetGrassActorClass(UClass *Class)
