@@ -44,7 +44,7 @@ public:
 			CompactNodeTitle = "stepOn",
 			Keywords = "graph grass step"),
 		Category = Game)
-	void stepOn(AMapReaderActor *map_reader, FVector local_position, int32 max_fill,TArray<int32> warn_cows);
+	void stepOn(AMapReaderActor *map_reader, FVector local_position, int32 max_fill);
 
 private:
 	uint32_t LastStep{ std::numeric_limits<uint32_t>::max() };
