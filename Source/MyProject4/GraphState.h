@@ -46,6 +46,12 @@ public:
 		Category = Game)
 	void stepOn(AMapReaderActor *map_reader, FVector local_position, int32 max_fill);
 
+	UFUNCTION(BlueprintCallable,
+                meta = (DisplayName = "Get Status",
+                        CompactNodeTitle = "getStatus",
+                        Keywords = "graph grass status get"),
+                Category = Game)
+	 float getStatus(AMapReaderActor *map_reader);
 private:
 	uint32_t LastStep{ std::numeric_limits<uint32_t>::max() };
 	StepOnResult step_on_result;
