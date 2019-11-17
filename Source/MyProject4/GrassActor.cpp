@@ -8,7 +8,7 @@
 // Sets default values
 AGrassActor::AGrassActor()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 }
 
@@ -24,6 +24,9 @@ void AGrassActor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	float target = this->Animator.Tick(DeltaTime);
+	if (target < 0.2f) {
+		target = 0.2f;
+	}
 	GrassComponent->SetMorphTarget(L"Cube_000", target);
 }
 
