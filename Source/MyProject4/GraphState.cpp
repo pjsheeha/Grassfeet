@@ -32,7 +32,7 @@ void AGraphState::Tick(float DeltaTime)
 }
 
 
-using Point = FPoint;
+//using Point = FPoint;
 
 struct FloodFillResult {
 	uint32_t filled;
@@ -45,7 +45,7 @@ struct FloodFillResult {
 
 // Result is only valid when called without set_grass.
 static FloodFillResult flood_fill(
-	std::vector<Point>& points,
+	std::vector<FPoint>& points,
 	uint32_t index,
 	std::vector<bool>& visited,
 	bool set_grass,
@@ -130,7 +130,7 @@ static FloodFillResult flood_fill(
 }
 
 static void stepOnWithoutGroupingFull(
-	std::vector<Point>& points, uint32_t index, uint32_t max_fill,
+	std::vector<FPoint>& points, uint32_t index, uint32_t max_fill,
 	StepOnResult &step_on_result,
 	bool set_status = true,
 	std::function<void(uint32_t, PointFillStatus)> fill
@@ -138,7 +138,7 @@ static void stepOnWithoutGroupingFull(
 ) {
 	GF_LOG(L"stepOnWithoutGroupingFull, index=%d", index);
 
-	Point& point = points[index];
+	FPoint& point = points[index];
 
 	if (point.fill_status != PointFillStatus::Empty) {
 		step_on_result.enclosures = 0;
@@ -227,7 +227,7 @@ static void stepOnWithoutGroupingFull(
 	step_on_result.enclosures = enclosures;
 }
 
-static void debugStatus(std::vector<Point>& points)
+static void debugStatus(std::vector<FPoint>& points)
 {
 	GF_LOG(L"Path:");
 	for (uint32_t i = 0; i < points.size(); i++) {
@@ -380,4 +380,18 @@ void AGraphState::adjustGroups(AMapReaderActor* map_reader) {
 			point.fill_status = PointFillStatus::Grass;
 		}
 	}
+}
+
+
+float AGraphState::getStatus(AMapReaderActor* map_reader){
+  auto& points = map_reader->GetMap();
+  int grass = 0;
+  int total = points.size();
+  for(auto& point : points){
+  
+    if (point.fill_status == PointFillStatus::Grass || point.fill_status == PointFillStatus::Path){
+      grass++;
+    }
+  }
+  return ((float)grass)/((float)total);
 }
