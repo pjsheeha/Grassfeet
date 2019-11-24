@@ -205,8 +205,8 @@ void AGrassSpawnActor::UpdateGrassActors(AMapReaderActor* MapReader, AActor* Pla
 		group_transform.SetScale3D(FVector::OneVector);
 
 		AGrassActor* actor = world->SpawnActor<AGrassActor>(this->GrassActorClass, group_transform * Planet->ActorToWorld());
-		for (auto c : actor->GetComponentsByClass(UStaticMeshComponent::StaticClass())) {
-			auto component = dynamic_cast<UStaticMeshComponent*>(c);
+		for (auto c : actor->GetComponentsByClass(UMeshComponent::StaticClass())) {
+			auto component = dynamic_cast<UMeshComponent*>(c);
 
 			auto transform = component->GetComponentTransform();
 			auto scale = transform.GetScale3D();
