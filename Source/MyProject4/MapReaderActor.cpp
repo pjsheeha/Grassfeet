@@ -153,7 +153,7 @@ void AMapReaderActor::InitializeMap() {
 		std::random_device rd;
 		std::mt19937 gen(rd());
 		std::uniform_real_distribution<float> rand_rot(0.0f, 360.0f);
-		std::uniform_real_distribution<float> rand_scale(0.5f, 1.2f);
+		std::uniform_real_distribution<float> rand_scale(1.2f, 1.4f);
 
 		for (auto& transform : groups) {
 			auto rot = UKismetMathLibrary::ComposeRotators(FRotator(0.0f, rand_rot(gen), 0.0f), transform.GetRotation().Rotator());
