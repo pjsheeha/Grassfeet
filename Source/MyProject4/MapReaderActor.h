@@ -12,6 +12,8 @@
 
 #include <bitset>
 #include <vector>
+#include <tuple>
+#include <queue>
 
 #include "MapReaderActor.generated.h"
 
@@ -37,6 +39,19 @@ struct FPoint {
 	}
 };
 
+typedef std::tuple<int,int> queueElem;
+
+class pregrassQueueCompare
+{
+public:
+	pregrassQueueCompare() {};
+	bool operator() (const queueElem& lhs, const queueElem& rhs) {
+		return std::get<0>(lhs) <= std::get<0>(rhs);
+	}
+};
+
+typedef std::priority_queue<queueElem, std::vector<queueElem>, pregrassQueueCompare> pregrassQueue;
+
 UCLASS()
 class MYPROJECT4_API AMapReaderActor : public AActor
 {
@@ -53,13 +68,28 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	
 	std::vector<FPoint>& GetMap();
 	std::vector<FTransform>& GetGroups();
+
+	void pushPregrassQueue(int pregrassInd);
+	UFUNCTION(BlueprintCallable,
+		meta = (DisplayName = "Is Empty Pregrass Queue",
+			CompactNodeTitle = "isemptypregrassq",
+			Keywords = "pregrassQueue isempty"),
+		Category = Game)
+	bool isEmptyPregrassQueue();
+	UFUNCTION(BlueprintCallable,
+		meta = (DisplayName = "Pop Pregrass Queue",
+			CompactNodeTitle = "poppregrassq",
+			Keywords = "pregrass pop queue"),
+		Category = Game)
+	FTransform popPregrassQueue();
 
 private:
 	std::vector<FPoint> Map{};
 	std::vector<FTransform> Groups{};
+	pregrassQueue pregrass;
+
 
 	void InitializeMap();
 };

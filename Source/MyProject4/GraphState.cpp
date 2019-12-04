@@ -151,6 +151,7 @@ static void stepOnWithoutGroupingFull(
 	fill(index, PointFillStatus::Path);
 	point.fill_status = PointFillStatus::Path;
 
+
 	// Flood fill.
 
 	enum class Status {
@@ -351,6 +352,7 @@ void AGraphState::stepOnWithoutGrouping(AMapReaderActor * map_reader, FVector lo
 				while (cur != LastStep) {
 					points[min_i].footstep = true;
 					stepOnWithoutGroupingFull(points, cur, max_fill, this->step_on_result);
+					map_reader->pushPregrassQueue(cur);
 					cur = pred[cur];
 				}
 			}
@@ -365,6 +367,7 @@ void AGraphState::stepOnWithoutGrouping(AMapReaderActor * map_reader, FVector lo
 		stepOnWithoutGroupingFull(points, min_i, max_fill, this->step_on_result);
 	}
 	LastStep = min_i;
+	
 }
 
 void AGraphState::adjustGroups(AMapReaderActor* map_reader) {

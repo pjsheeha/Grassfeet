@@ -179,3 +179,45 @@ std::vector<FPoint>& AMapReaderActor::GetMap() {
 std::vector<FTransform>& AMapReaderActor::GetGroups() {
 	return this->Groups;
 }
+
+void AMapReaderActor::pushPregrassQueue(int pregrassInd) {
+
+	queueElem newElem = std::make_tuple(rand(), pregrassInd);
+	if( this->pregrass.size() <= 500){
+		this->pregrass.push(newElem);
+	}
+	
+
+}
+
+bool AMapReaderActor::isEmptyPregrassQueue() {
+	while (!(this->pregrass.empty()))
+	{
+		queueElem first = this->pregrass.top();
+		int pregrassInd = std::get<1>(first);
+		FPoint pregrassPoint = this->Map[pregrassInd];
+
+		if (pregrassPoint.fill_status == PointFillStatus::Path) {
+			return false;
+		}
+		else {
+			this->pregrass.pop();
+		}
+	}
+	return true;
+}
+
+FTransform AMapReaderActor::popPregrassQueue() {
+	while (!(this->pregrass.empty()))
+	{
+		queueElem first = this->pregrass.top();
+		this->pregrass.pop();
+		int pregrassInd = std::get<1>(first);
+		FPoint pregrassPoint = this->Map[pregrassInd];
+
+		if (pregrassPoint.fill_status == PointFillStatus::Path) {
+			return pregrassPoint.transform;
+		}
+	}
+	return this->Map[0].transform;
+}
