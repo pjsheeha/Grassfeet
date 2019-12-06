@@ -47,13 +47,15 @@ void AGrassActor::SetFillStatus(PointFillStatus Status)
 	case PointFillStatus::Grass:
 		GrassComponent->SetHiddenInGame(false);
 		PregrassComponent->SetHiddenInGame(true);
+		if(rand() % 2 == 0)
 		arrivalsound->Play();
 		break;
 	case PointFillStatus::Path:
 		GrassComponent->SetHiddenInGame(true);
 		PregrassComponent->SetHiddenInGame(false);
 		PregrassComponent->SetWorldScale3D(FVector::OneVector * 2);
-		pregrasssound->Play();
+		if(rand() % 10  == 0)
+			pregrasssound->Play();
 	}
 	this->FillStatus = Status;
 }
@@ -118,7 +120,8 @@ float GrassAnimator::Tick(float DeltaTime) {
 		}
 		else {
 			GrassAnimTick = 0;
-			postgrasssound->Play();
+			if(postgrasssound != NULL && rand() % 2 == 0)
+				postgrasssound->Play();
 			return 0.5f;
 		}
 	}
