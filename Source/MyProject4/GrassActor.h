@@ -14,6 +14,7 @@ class GrassAnimator
 public:
 	float Tick(float DeltaTime);
 	void Footstep();
+	UAudioComponent* postgrasssound;
 
 private:
 	float GrassAnimTime = 0.0f;
@@ -45,7 +46,8 @@ public:
 private:
 	USkeletalMeshComponent* GrassComponent;
 	UMeshComponent* PregrassComponent;
-	UAudioComponent* ac;
+	UAudioComponent* pregrasssound;
+	UAudioComponent* arrivalsound;
 	PointFillStatus FillStatus{ PointFillStatus::Empty };
 	GrassAnimator Animator;
 
@@ -54,5 +56,5 @@ private:
 			CompactNodeTitle = "SetGrassMeshes",
 			Keywords = "grass mesh meshes"),
 		Category = Game)
-		void SetGrassMeshes(USkeletalMeshComponent *Grass, UMeshComponent *Pregrass, UAudioComponent *ac);
+		void SetGrassMeshes(USkeletalMeshComponent *Grass, UMeshComponent *Pregrass, UAudioComponent *postgrasssound, UAudioComponent *pregrasssound, UAudioComponent *arrivalsound);
 };
