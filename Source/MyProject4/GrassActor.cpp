@@ -120,8 +120,8 @@ float GrassAnimator::Tick(float DeltaTime) {
 		}
 		else {
 			GrassAnimTick = 0;
-			if(postgrasssound != NULL && rand() % 2 == 0)
-				postgrasssound->Play();
+			//if (postgrasssound != NULL && rand() % 2 == 0)
+				//postgrasssound->Play();
 			return 0.5f;
 		}
 	}
