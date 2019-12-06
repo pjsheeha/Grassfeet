@@ -43,26 +43,32 @@ void AGrassActor::SetFillStatus(PointFillStatus Status)
 	case PointFillStatus::Empty:
 		GrassComponent->SetHiddenInGame(true);
 		PregrassComponent->SetHiddenInGame(true);
+		ac->SetVolumeMultiplier(0);
 		break;
 	case PointFillStatus::Grass:
 		GrassComponent->SetHiddenInGame(false);
 		PregrassComponent->SetHiddenInGame(true);
+		ac->SetVolumeMultiplier(.1);
 		break;
 	case PointFillStatus::Path:
 		GrassComponent->SetHiddenInGame(true);
 		PregrassComponent->SetHiddenInGame(false);
+		PregrassComponent->SetWorldScale3D(FVector::OneVector * 2);
+		ac->SetVolumeMultiplier(0);
 	}
 	this->FillStatus = Status;
 }
 
 void AGrassActor::Footstep()
 {
+	//ac->Play();
 	this->Animator.Footstep();
 }
 
-void AGrassActor::SetGrassMeshes(USkeletalMeshComponent *Grass, UMeshComponent *Pregrass) {
+void AGrassActor::SetGrassMeshes(USkeletalMeshComponent *Grass, UMeshComponent *Pregrass, UAudioComponent *ac) {
 	this->GrassComponent = Grass;
 	this->PregrassComponent = Pregrass;
+	this->ac = ac;
 }
 
 float GrassAnimator::Tick(float DeltaTime) {

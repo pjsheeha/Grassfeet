@@ -6,6 +6,7 @@
 #include "Engine/Classes/Components/MeshComponent.h"
 #include "Engine/Classes/Components/SkeletalMeshComponent.h"
 #include "GameFramework/Actor.h"
+#include "Engine/Classes/Components/AudioComponent.h"
 #include "GrassActor.generated.h"
 
 class GrassAnimator
@@ -44,6 +45,7 @@ public:
 private:
 	USkeletalMeshComponent* GrassComponent;
 	UMeshComponent* PregrassComponent;
+	UAudioComponent* ac;
 	PointFillStatus FillStatus{ PointFillStatus::Empty };
 	GrassAnimator Animator;
 
@@ -52,5 +54,5 @@ private:
 			CompactNodeTitle = "SetGrassMeshes",
 			Keywords = "grass mesh meshes"),
 		Category = Game)
-		void SetGrassMeshes(USkeletalMeshComponent *Grass, UMeshComponent *Pregrass);
+		void SetGrassMeshes(USkeletalMeshComponent *Grass, UMeshComponent *Pregrass, UAudioComponent *ac);
 };
